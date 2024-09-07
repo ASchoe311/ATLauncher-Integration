@@ -1,4 +1,4 @@
-# ATLauncher integration plugin for Playnite
+# [ATLauncher](https://atlauncher.com/) integration plugin for Playnite
 
 Enables Playnite to import and launch Minecraft instances made using ATLauncher as if they were individual games. 
 This is still a work in progress and will continue to be improved
