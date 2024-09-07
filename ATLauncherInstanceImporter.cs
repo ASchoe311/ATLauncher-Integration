@@ -109,7 +109,8 @@ namespace ATLauncherInstanceImporter
                             IsPlayAction = true
                         }
                     },
-                    IsInstalled = true
+                    IsInstalled = true,
+                    Source = new MetadataNameProperty("ATLauncher")
 
                 });
             }
@@ -126,22 +127,29 @@ namespace ATLauncherInstanceImporter
             return new ATLauncherInstanceImporterSettingsView();
         }
 
-        //public void UpdateLaunchArgs()
-        //{
-        //    using (PlayniteApi.Database.BufferedUpdate())
-        //    {
-        //        foreach (var game in PlayniteApi.Database.Games)
-        //        {
-        //            //if (game.Source.ToString() == "ATLauncher")
-        //            //{
-        //            //    var actions = game.GameActions;
-        //            //    actions[0].Arguments = GetLaunchString(game.InstallDirectory);
-        //            //}
-        //            logger.Debug(game.Source.ToString());
-        //        }
-        //    }
-        //}
-
+        public void UpdateLaunchArgs()
+        {
+            PlayniteApi.Database.Games.BeginBufferUpdate();
+            foreach (var game in PlayniteApi.Database.Games)
+            {
+                if (game.PluginId != Id)
+                {
+                    continue;
+                }
+                var action = game.GameActions[0];
+                game.GameActions[0] = new GameAction
+                {
+                    Type = GameActionType.File,
+                    Path = action.Path,
+                    Arguments = GetLaunchString(game.InstallDirectory),
+                    WorkingDir = settings.Settings.ATLauncherLoc,
+                    TrackingMode = TrackingMode.Default,
+                    IsPlayAction = true
+                };
+                PlayniteApi.Database.Games.Update(game);
+            }
+            PlayniteApi.Database.Games.EndBufferUpdate();
+        }
         //public void SetLauncher()
         //{
 

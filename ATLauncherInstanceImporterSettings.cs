@@ -79,11 +79,11 @@ namespace ATLauncherInstanceImporter
             // Code executed when user decides to confirm changes made since BeginEdit was called.
             // This method should save settings made to Option1 and Option2.
             plugin.SavePluginSettings(Settings);
-            //if (Settings != editingClone)
-            //{
-            //    logger.Debug("Settings changed, updating games");
-            //    plugin.UpdateLaunchArgs();
-            //}
+            if (Settings != editingClone)
+            {
+                logger.Debug("Settings changed, updating games");
+                plugin.UpdateLaunchArgs();
+            }
         }
 
         public bool VerifySettings(out List<string> errors)
