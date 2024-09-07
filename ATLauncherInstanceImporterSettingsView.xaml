@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="ATLauncherInstanceImporter.ATLauncherInstanceImporterSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="600">
+	<StackPanel>
+		<TextBlock Text="Location of ATLauncher folder:"/>
+		<TextBox Text="{Binding Settings.ATLauncherLoc}"/>
+		<TextBlock Text="Show ATLauncher console while launching instance:"/>
+		<CheckBox IsChecked="{Binding Settings.ShowATLauncherConsole}"/>
+		<TextBlock Text="Automatically close ATLauncher when instance is launcher:"/>
+		<CheckBox IsChecked="{Binding Settings.CloseATLOnLaunch}"/>
+	</StackPanel>
+</UserControl>
