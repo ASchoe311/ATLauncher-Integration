@@ -7,9 +7,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace ATLauncherInstanceImporter
 {
+
+    //public class ATLauncher
+    //{
+    //    public string InstalLDir { get; }
+
+    //    public string ExePath { get; }
+
+    //    public string InstancePath { get; }
+
+    //}
+
     public class ATLauncherInstanceImporter : LibraryPlugin
     {
         private static readonly ILogger logger = LogManager.GetLogger();
@@ -33,45 +46,74 @@ namespace ATLauncherInstanceImporter
             };
         }
 
+        private string GetCLIArgs()
+        {
+            string args = "";
+            if (!settings.Settings.ShowATLauncherConsole)
+            {
+                args += " -no-console";
+            }
+            if (settings.Settings.CloseATLOnLaunch)
+            {
+                args += " -close-launcher";
+            }
+            return args;
+        }
+
+        private List<string> GetInstanceDirs()
+        {
+            return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
+
+        }
+
+        private string GetInstanceName(string instanceDir)
+        {
+            JsonTextReader reader = new JsonTextReader(new StreamReader(Path.Combine(instanceDir, "instance.json")));
+            while (reader.Read())
+            {
+                if ((string)reader.Value == "name")
+                {
+                    reader.Read();
+                    return (string)reader.Value;
+                }
+            }
+            return null;
+        }
+
+        private string GetLaunchString(string instanceDir)
+        {
+            return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
+        }
+
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
         {
             // Return list of user's games.
-            return new List<GameMetadata>()
+            List<GameMetadata> games = new List<GameMetadata>();
+            foreach (var dir in GetInstanceDirs())
             {
-                new GameMetadata()
+                var instName = GetInstanceName(dir);
+                games.Add(new GameMetadata()
                 {
-                    Name = "Notepad",
-                    GameId = "notepad",
+                    Name = instName != null ? instName : dir,
+                    InstallDirectory = dir,
+                    GameId = Path.GetFileName(dir).ToLower(),
                     GameActions = new List<GameAction>
                     {
                         new GameAction()
                         {
                             Type = GameActionType.File,
-                            Path = "notepad.exe",
+                            Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
+                            Arguments = GetLaunchString(dir),
+                            WorkingDir = settings.Settings.ATLauncherLoc,
+                            TrackingMode = TrackingMode.Default,
                             IsPlayAction = true
                         }
                     },
-                    IsInstalled = true,
-                    Icon = new MetadataFile(@"c:\Windows\notepad.exe")
-                },
-                new GameMetadata()
-                {
-                    Name = "Calculator",
-                    GameId = "calc",
-                    GameActions = new List<GameAction>
-                    {
-                        new GameAction()
-                        {
-                            Type = GameActionType.File,
-                            Path = "calc.exe",
-                            IsPlayAction = true
-                        }
-                    },
-                    IsInstalled = true,
-                    Icon = new MetadataFile(@"https://playnite.link/applogo.png"),
-                    BackgroundImage = new MetadataFile(@"https://playnite.link/applogo.png")
-                }
-            };
+                    IsInstalled = true
+
+                });
+            }
+            return games;
         }
 
         public override ISettings GetSettings(bool firstRunSettings)
@@ -83,5 +125,27 @@ namespace ATLauncherInstanceImporter
         {
             return new ATLauncherInstanceImporterSettingsView();
         }
+
+        //public void UpdateLaunchArgs()
+        //{
+        //    using (PlayniteApi.Database.BufferedUpdate())
+        //    {
+        //        foreach (var game in PlayniteApi.Database.Games)
+        //        {
+        //            //if (game.Source.ToString() == "ATLauncher")
+        //            //{
+        //            //    var actions = game.GameActions;
+        //            //    actions[0].Arguments = GetLaunchString(game.InstallDirectory);
+        //            //}
+        //            logger.Debug(game.Source.ToString());
+        //        }
+        //    }
+        //}
+
+        //public void SetLauncher()
+        //{
+
+        //}
+
     }
 }

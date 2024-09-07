@@ -40,6 +40,8 @@ namespace ATLauncherInstanceImporter
             }
         }
 
+        private ILogger logger = LogManager.GetLogger();
+
         public ATLauncherInstanceImporterSettingsViewModel(ATLauncherInstanceImporter plugin)
         {
             // Injecting your plugin instance is required for Save/Load method because Playnite saves data to a location based on what plugin requested the operation.
@@ -77,11 +79,16 @@ namespace ATLauncherInstanceImporter
             // Code executed when user decides to confirm changes made since BeginEdit was called.
             // This method should save settings made to Option1 and Option2.
             plugin.SavePluginSettings(Settings);
+            //if (Settings != editingClone)
+            //{
+            //    logger.Debug("Settings changed, updating games");
+            //    plugin.UpdateLaunchArgs();
+            //}
         }
 
         public bool VerifySettings(out List<string> errors)
         {
-            ILogger logger = LogManager.GetLogger();
+            
             // Code execute when user decides to confirm changes made since BeginEdit was called.
             // Executed before EndEdit is called and EndEdit is not called if false is returned.
             // List of errors is presented to user if verification fails.
@@ -89,7 +96,6 @@ namespace ATLauncherInstanceImporter
 
             if (File.Exists(Settings.ATLauncherLoc + "\\ATLauncher.exe"))
             {
-                logger.Debug("ATLauncher executable found at given directory");
                 return true;
             }
             logger.Debug(Settings.ATLauncherLoc + "ATLauncher.exe does not contain ATLauncher.exe");
