@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ATLauncherInstanceImporter
 {
@@ -80,6 +81,80 @@ namespace ATLauncherInstanceImporter
             return null;
         }
 
+        private class Mod
+        {
+            private string _Name = string.Empty;
+            private List<string> _Authors = new List<string>();
+            private string _Link = string.Empty;
+            private string _Summary = string.Empty;
+
+            public string Name { get => _Name; set => _Name = value; }
+            public List<string> Authors { get => _Authors; set => _Authors = value; }
+            public string Link { get => _Link; set => _Link = value; }
+            public string Summary { get => _Summary; set => _Summary = value; }
+
+        }
+
+        private List<Mod> GetModList(string instanceDir)
+        {
+            List<Mod> modList = new List<Mod>();
+            //logger.Debug(Path.Combine(instanceDir, "instance.json"));
+            string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
+            logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
+            dynamic json = JsonConvert.DeserializeObject(jsonFile);
+            //json = json.launcher;
+            //json = JsonConvert.SerializeObject(json);
+            //json = JObject.Parse(json);
+            //var instance = ATLauncherInstance.Instance.FromJson(jsonFile);
+            logger.Debug($"{json["launcher"]["name"]}");
+            foreach (var mod in json["launcher"]["mods"])
+            {
+                logger.Debug($"Mod name is {mod["name"]}");
+                //List<string> authors = new List<string>();
+                //foreach (var auth in mod["curseForgeProject"]["authors"])
+                //{
+                //    logger.Debug($"Author is {auth["name"]}");
+                //    authors.Add(auth["name"]);
+                //}
+                modList.Add(new Mod()
+                {
+                    Name = mod["name"],
+                    Summary = mod["description"],
+                    //Authors = authors,
+                    Link = mod["curseForgeProject"]["links"]["websiteUrl"]
+                });
+
+
+            }
+            return modList;
+        }
+
+        private string GenerateInstanceDescription(string instanceDir)
+        {
+            string description = "<h1>Mod List</h1><br>";
+            foreach (Mod mod in GetModList(instanceDir))
+            {
+                description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
+                //string authString = "By ";
+                //for (int i = 0; i < mod.Authors.Count(); i++)
+                //{
+                //    if (i > 0 && i <  mod.Authors.Count() - 1)
+                //    {
+                //        authString += $", ";
+                //    }
+                //    if (i == mod.Authors.Count() - 1)
+                //    {
+                //        authString += "and ";
+                //    }
+                //    authString += mod.Authors[i];
+
+                //}
+                //description += $"<i>{authString}</i><br>";
+                description += $"<h3>{mod.Summary}</h3></p><br>";
+            }
+            return description;
+        }
+
         private string GetLaunchString(string instanceDir)
         {
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
@@ -123,7 +198,8 @@ namespace ATLauncherInstanceImporter
                     Source = new MetadataNameProperty("ATLauncher"),
                     Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe")),
                     CoverImage = GetCoverImage(dir),
-                    BackgroundImage = GetCoverImage(dir)
+                    BackgroundImage = GetCoverImage(dir),
+                    Description = GenerateInstanceDescription(dir)
                 });
             }
             return games;
