@@ -111,7 +111,8 @@ namespace ATLauncherInstanceImporter
                         }
                     },
                     IsInstalled = true,
-                    Source = new MetadataNameProperty("ATLauncher")
+                    Source = new MetadataNameProperty("ATLauncher"),
+                    Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"))
 
                 });
             }

@@ -10,7 +10,7 @@
 		<TextBox Text="{Binding Settings.ATLauncherLoc}"/>
 		<TextBlock Text="Show ATLauncher console while launching instance:"/>
 		<CheckBox IsChecked="{Binding Settings.ShowATLauncherConsole}"/>
-		<TextBlock Text="Automatically close ATLauncher when instance is launcher:"/>
+		<TextBlock Text="Automatically close ATLauncher when instance is launched:"/>
 		<CheckBox IsChecked="{Binding Settings.CloseATLOnLaunch}"/>
 	</StackPanel>
 </UserControl>
