@@ -92,6 +92,7 @@ namespace ATLauncherInstanceImporter
             foreach (var dir in GetInstanceDirs())
             {
                 var instName = GetInstanceName(dir);
+                logger.Info($"Discovered instance \"{instName}\", adding to library");
                 games.Add(new GameMetadata()
                 {
                     Name = instName != null ? instName : dir,
@@ -136,6 +137,7 @@ namespace ATLauncherInstanceImporter
                 {
                     continue;
                 }
+                logger.Info($"Updating launch arguments for instance {game.Name}");
                 var action = game.GameActions[0];
                 game.GameActions[0] = new GameAction
                 {

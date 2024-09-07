@@ -81,7 +81,7 @@ namespace ATLauncherInstanceImporter
             plugin.SavePluginSettings(Settings);
             if (Settings != editingClone)
             {
-                logger.Debug("Settings changed, updating games");
+                logger.Info("ATLauncher Integration settings changed, updating games");
                 plugin.UpdateLaunchArgs();
             }
         }
@@ -98,9 +98,10 @@ namespace ATLauncherInstanceImporter
             {
                 return true;
             }
-            logger.Debug(Settings.ATLauncherLoc + "ATLauncher.exe does not contain ATLauncher.exe");
+            logger.Error(Settings.ATLauncherLoc + "ATLauncher.exe does not contain ATLauncher.exe");
             errors.Add("ATLauncher executable not found at given location");
             return false;
         }
     }
+
 }
