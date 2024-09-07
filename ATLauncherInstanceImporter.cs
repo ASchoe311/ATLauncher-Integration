@@ -85,6 +85,15 @@ namespace ATLauncherInstanceImporter
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
         }
 
+        private MetadataFile GetCoverImage(string instanceDir)
+        {
+            if (File.Exists(Path.Combine(instanceDir, "instance.png")))
+            {
+                return new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+            }
+            return new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
+        }
+
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
         {
             // Return list of user's games.
@@ -112,8 +121,9 @@ namespace ATLauncherInstanceImporter
                     },
                     IsInstalled = true,
                     Source = new MetadataNameProperty("ATLauncher"),
-                    Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"))
-
+                    Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe")),
+                    CoverImage = GetCoverImage(dir),
+                    BackgroundImage = GetCoverImage(dir)
                 });
             }
             return games;
