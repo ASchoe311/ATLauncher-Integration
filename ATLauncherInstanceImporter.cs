@@ -98,29 +98,25 @@ namespace ATLauncherInstanceImporter
         private List<Mod> GetModList(string instanceDir)
         {
             List<Mod> modList = new List<Mod>();
-            //logger.Debug(Path.Combine(instanceDir, "instance.json"));
+            logger.Info($"Getting mod list for {Path.GetFileName(instanceDir)}");
             string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
             logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
             dynamic json = JsonConvert.DeserializeObject(jsonFile);
-            //json = json.launcher;
-            //json = JsonConvert.SerializeObject(json);
-            //json = JObject.Parse(json);
-            //var instance = ATLauncherInstance.Instance.FromJson(jsonFile);
             logger.Debug($"{json["launcher"]["name"]}");
             foreach (var mod in json["launcher"]["mods"])
             {
-                logger.Debug($"Mod name is {mod["name"]}");
-                //List<string> authors = new List<string>();
-                //foreach (var auth in mod["curseForgeProject"]["authors"])
-                //{
-                //    logger.Debug($"Author is {auth["name"]}");
-                //    authors.Add(auth["name"]);
-                //}
+                //logger.Debug($"Mod name is {mod["name"]}");
+                List<string> authors = new List<string>();
+                foreach (var auth in mod["curseForgeProject"]["authors"])
+                {
+                    //logger.Debug($"Author is {(string)auth["name"]}");
+                    authors.Add((string)auth["name"]);
+                }
                 modList.Add(new Mod()
                 {
                     Name = mod["name"],
                     Summary = mod["description"],
-                    //Authors = authors,
+                    Authors = authors,
                     Link = mod["curseForgeProject"]["links"]["websiteUrl"]
                 });
 
@@ -131,25 +127,27 @@ namespace ATLauncherInstanceImporter
 
         private string GenerateInstanceDescription(string instanceDir)
         {
+            logger.Info($"Generating description for instance {Path.GetFileName(instanceDir)}");
             string description = "<h1>Mod List</h1><br>";
             foreach (Mod mod in GetModList(instanceDir))
             {
                 description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
-                //string authString = "By ";
-                //for (int i = 0; i < mod.Authors.Count(); i++)
-                //{
-                //    if (i > 0 && i <  mod.Authors.Count() - 1)
-                //    {
-                //        authString += $", ";
-                //    }
-                //    if (i == mod.Authors.Count() - 1)
-                //    {
-                //        authString += "and ";
-                //    }
-                //    authString += mod.Authors[i];
+                string authString = "By";
+                //logger.Debug($"{mod.Authors.Count()}");
+                for (int i = 0; i < mod.Authors.Count(); i++)
+                {
+                    if (i == mod.Authors.Count() - 1 && i != 0)
+                    {
+                        authString += " and";
+                    }
+                    authString += " " + mod.Authors[i];
+                    if (mod.Authors.Count() > 2 && i != mod.Authors.Count() - 1)
+                    {
+                        authString += $",";
+                    }
 
-                //}
-                //description += $"<i>{authString}</i><br>";
+                }
+                description += $"<i>{authString}</i>";
                 description += $"<h3>{mod.Summary}</h3></p><br>";
             }
             return description;
