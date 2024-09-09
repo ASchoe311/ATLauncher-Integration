@@ -36,6 +36,7 @@ namespace ATLauncherInstanceImporter
     {
         private static readonly ILogger logger = LogManager.GetLogger();
 
+        internal static readonly string AssemblyPath = Path.GetDirectoryName(typeof(ATLauncherInstanceImporter).Assembly.Location);
         private ATLauncherInstanceImporterSettingsViewModel settings { get; set; }
 
         public override Guid Id { get; } = Guid.Parse("40e56f44-4955-40ec-9bf3-682c4007e55b");

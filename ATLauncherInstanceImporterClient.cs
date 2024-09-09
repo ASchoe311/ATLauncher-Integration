@@ -13,7 +13,7 @@ namespace ATLauncherInstanceImporter
     {
         private static readonly ILogger logger = LogManager.GetLogger();
         private readonly ATLauncherInstanceImporter _ATLauncherClient;
-
+        public override string Icon => Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png");
         public override bool IsInstalled => true;
 
 
