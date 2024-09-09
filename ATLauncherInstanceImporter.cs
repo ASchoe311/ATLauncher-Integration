@@ -10,19 +10,27 @@ using System.Windows.Controls;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime;
 
 namespace ATLauncherInstanceImporter
 {
 
-    //public class ATLauncher
-    //{
-    //    public string InstalLDir { get; }
+    public sealed class ATLauncher
+    {
+        public string InstallDir { get; }
 
-    //    public string ExePath { get; }
+        public string ExePath { get; }
 
-    //    public string InstancePath { get; }
+        public string InstancePath { get; }
 
-    //}
+        public ATLauncher(string installDir)
+        {
+            InstallDir = installDir;
+            ExePath = Path.Combine(installDir, "ATLauncher.exe");
+            InstancePath = Path.Combine(installDir, "Instances");
+        }
+
+    }
 
     public class ATLauncherInstanceImporter : LibraryPlugin
     {
@@ -35,16 +43,25 @@ namespace ATLauncherInstanceImporter
         // Change to something more appropriate
         public override string Name => "ATLauncher";
 
+
         // Implementing Client adds ability to open it via special menu in playnite.
-        public override LibraryClient Client { get; } = new ATLauncherInstanceImporterClient();
+        public override LibraryClient Client { get; }
+
+        public ATLauncher Launcher { get; private set;  }
 
         public ATLauncherInstanceImporter(IPlayniteAPI api) : base(api)
         {
             settings = new ATLauncherInstanceImporterSettingsViewModel(this);
+            SetClient();
             Properties = new LibraryPluginProperties
             {
                 HasSettings = true
             };
+            Client =  new ATLauncherInstanceImporterClient(this);
+        }
+        private void SetClient()
+        {
+            Launcher = new ATLauncher(settings.Settings.ATLauncherLoc);
         }
 
         private string GetCLIArgs()
@@ -81,23 +98,35 @@ namespace ATLauncherInstanceImporter
             return null;
         }
 
-        private class Mod
+
+        private class Instance
         {
             private string _Name = string.Empty;
-            private List<string> _Authors = new List<string>();
-            private string _Link = string.Empty;
-            private string _Summary = string.Empty;
+            private string _MCVer = string.Empty;
+            private List<Mod> _ModList = new List<Mod>();
 
             public string Name { get => _Name; set => _Name = value; }
-            public List<string> Authors { get => _Authors; set => _Authors = value; }
-            public string Link { get => _Link; set => _Link = value; }
-            public string Summary { get => _Summary; set => _Summary = value; }
+            public string MCVer { get => _MCVer; set => _MCVer = value; }
+            public List<Mod> ModList { get => _ModList; set => _ModList = value; }
+            public class Mod
+            {
+                private string _Name = string.Empty;
+                private List<string> _Authors = new List<string>();
+                private string _Link = string.Empty;
+                private string _Summary = string.Empty;
+
+                public string Name { get => _Name; set => _Name = value; }
+                public List<string> Authors { get => _Authors; set => _Authors = value; }
+                public string Link { get => _Link; set => _Link = value; }
+                public string Summary { get => _Summary; set => _Summary = value; }
+
+            }
 
         }
 
-        private List<Mod> GetModList(string instanceDir)
+        private List<Instance.Mod> GetModList(string instanceDir)
         {
-            List<Mod> modList = new List<Mod>();
+            List<Instance.Mod> modList = new List<Instance.Mod>();
             logger.Info($"Getting mod list for {Path.GetFileName(instanceDir)}");
             string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
             logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
@@ -112,7 +141,7 @@ namespace ATLauncherInstanceImporter
                     //logger.Debug($"Author is {(string)auth["name"]}");
                     authors.Add((string)auth["name"]);
                 }
-                modList.Add(new Mod()
+                modList.Add(new Instance.Mod()
                 {
                     Name = mod["name"],
                     Summary = mod["description"],
@@ -125,11 +154,52 @@ namespace ATLauncherInstanceImporter
             return modList;
         }
 
-        private string GenerateInstanceDescription(string instanceDir)
+        //private string GenerateInstanceDescription(string instanceDir)
+        //{
+        //    logger.Info($"Generating description for instance {Path.GetFileName(instanceDir)}");
+        //    var modList = GetModList(instanceDir);
+        //    string description = "";
+        //    if (modList.Count == 0)
+        //    {
+        //        description += "No mods";
+        //        return description;
+        //    }
+        //    description += "<h1><u>Mod List</u></h1>";
+        //    foreach (Instance.Mod mod in modList)
+        //    {
+        //        description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
+        //        string authString = "By";
+        //        //logger.Debug($"{mod.Authors.Count()}");
+        //        for (int i = 0; i < mod.Authors.Count(); i++)
+        //        {
+        //            if (i == mod.Authors.Count() - 1 && i != 0)
+        //            {
+        //                authString += " and";
+        //            }
+        //            authString += " " + mod.Authors[i];
+        //            if (mod.Authors.Count() > 2 && i != mod.Authors.Count() - 1)
+        //            {
+        //                authString += $",";
+        //            }
+
+        //        }
+        //        description += $"<i>{authString}</i>";
+        //        description += $"<h3>{mod.Summary}</h3></p><br>";
+        //    }
+        //    return description;
+        //}
+
+        private string GenerateInstanceDescription(Instance instance)
         {
-            logger.Info($"Generating description for instance {Path.GetFileName(instanceDir)}");
-            string description = "<h1>Mod List</h1><br>";
-            foreach (Mod mod in GetModList(instanceDir))
+            logger.Info($"Generating description for instance {instance.Name}");
+            string description = $"<h1>Minecraft Version: {instance.MCVer}</h1>";
+            if (instance.ModList.Count == 0)
+            {
+                description += "<h1>No mods</h1>";
+                return description;
+            }
+            description += "<h1>Mod List</h1><hr>";
+            foreach (var mod in instance.ModList)
             {
                 description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
                 string authString = "By";
@@ -167,17 +237,54 @@ namespace ATLauncherInstanceImporter
             return new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
         }
 
+        private Instance GetInstanceInfo(string instanceDir)
+        {
+            logger.Info($"Getting instance information for {Path.GetFileName(instanceDir)}");
+            List<Instance.Mod> modList = new List<Instance.Mod>();
+            string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
+            logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
+            dynamic json = JsonConvert.DeserializeObject(jsonFile);
+            logger.Debug($"{json["launcher"]["name"]}");
+            string instanceName = json["launcher"]["name"];
+            string mcVersion = json["id"];
+            foreach (var mod in json["launcher"]["mods"])
+            {
+                //logger.Debug($"Mod name is {mod["name"]}");
+                List<string> authors = new List<string>();
+                foreach (var auth in mod["curseForgeProject"]["authors"])
+                {
+                    //logger.Debug($"Author is {(string)auth["name"]}");
+                    authors.Add((string)auth["name"]);
+                }
+                modList.Add(new Instance.Mod()
+                {
+                    Name = mod["name"],
+                    Summary = mod["description"],
+                    Authors = authors,
+                    Link = mod["curseForgeProject"]["links"]["websiteUrl"]
+                });
+            }
+            return new Instance()
+            {
+                Name = instanceName,
+                MCVer = mcVersion,
+                ModList = modList
+            };
+        }
+
+
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
         {
             // Return list of user's games.
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                var instName = GetInstanceName(dir);
-                logger.Info($"Discovered instance \"{instName}\", adding to library");
+                Instance instance = GetInstanceInfo(dir);
+                //var instName = GetInstanceName(dir);
+                //logger.Info($"Discovered instance \"{instName}\", adding to library");
                 games.Add(new GameMetadata()
                 {
-                    Name = instName != null ? instName : dir,
+                    Name = instance.Name != null ? instance.Name : dir,
                     InstallDirectory = dir,
                     GameId = Path.GetFileName(dir).ToLower(),
                     GameActions = new List<GameAction>
@@ -197,7 +304,7 @@ namespace ATLauncherInstanceImporter
                     Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe")),
                     CoverImage = GetCoverImage(dir),
                     BackgroundImage = GetCoverImage(dir),
-                    Description = GenerateInstanceDescription(dir)
+                    Description = GenerateInstanceDescription(instance)
                 });
             }
             return games;
@@ -215,6 +322,7 @@ namespace ATLauncherInstanceImporter
 
         public void UpdateLaunchArgs()
         {
+            SetClient();
             PlayniteApi.Database.Games.BeginBufferUpdate();
             foreach (var game in PlayniteApi.Database.Games)
             {
@@ -237,6 +345,14 @@ namespace ATLauncherInstanceImporter
             }
             PlayniteApi.Database.Games.EndBufferUpdate();
         }
+        internal void DisplayLauncherError()
+        {
+            PlayniteApi.Dialogs.ShowErrorMessage(
+                $"The path to your launcher installation isn't valid:\n{Launcher.InstancePath}",
+                "ATLauncher Integration Plugin Erro"
+            );
+        }
+
         //public void SetLauncher()
         //{
 
