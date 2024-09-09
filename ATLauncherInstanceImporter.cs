@@ -121,7 +121,13 @@ namespace ATLauncherInstanceImporter
             description += "<h1>Mod List</h1><hr>";
             foreach (var mod in instance.ModList)
             {
-                description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
+                description += "<p><h2>";
+                description += mod.Link != string.Empty ? $"<a href={mod.Link}>{mod.Name}</a>" : $"{mod.Name}";
+                if (mod.Link != string.Empty)
+                {
+
+                }
+                description += "</h2>";
                 string authString = mod.Authors.Count == 0 ? "No authors listed" : "By";
                 //logger.Debug($"{mod.Authors.Count()}");
                 for (int i = 0; i < mod.Authors.Count(); i++)
@@ -171,7 +177,7 @@ namespace ATLauncherInstanceImporter
             {
                 logger.Debug($"Mod name is {mod["name"]}");
                 List<string> authors = new List<string>();
-                string modLink;
+                string modLink = string.Empty;
                 if (mod["curseForgeProject"] != null)
                 {
                     modLink = mod["curseForgeProject"]["links"]["websiteUrl"];
@@ -181,7 +187,7 @@ namespace ATLauncherInstanceImporter
                         authors.Add((string)auth["name"]);
                     }
                 }
-                else
+                else if (mod["modrinthProject"] != null)
                 {
                     modLink = mod["modrinthProject"]["source_url"];
                     authors.Add(modLink.Split('/')[3]);
