@@ -176,7 +176,7 @@ namespace ATLauncherInstanceImporter
             string mcVersion = json["id"];
             foreach (var mod in json["launcher"]["mods"])
             {
-                logger.Debug($"Mod name is {mod["name"]}");
+                //logger.Debug($"Mod name is {mod["name"]}");
                 List<string> authors = new List<string>();
                 string modLink = string.Empty;
                 if (mod["curseForgeProject"] != null)
@@ -293,14 +293,6 @@ namespace ATLauncherInstanceImporter
             );
         }
 
-        public void DisplayUninstallError(Game game)
-        {
-            PlayniteApi.Dialogs.ShowErrorMessage(
-                $"Something went wrong deleting instance folder for {game.Name}",
-                "ATLauncher Integration Instance Uninstaller Error"
-            );
-        }
-
         public class ATLauncherUninstallController : UninstallController
         {
             public ATLauncherUninstallController(Game game) : base(game)
@@ -311,10 +303,18 @@ namespace ATLauncherInstanceImporter
             public override void Uninstall(UninstallActionArgs args)
             {
                 logger.Info($"Deleting instance folder for {Game.Name} ({Game.InstallDirectory})");
+                if (!Directory.Exists(Game.InstallDirectory))
+                {
+                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"Cannot locate instance folder for {Game.Name}, removing from Playnite");
+                    InvokeOnUninstalled(new GameUninstalledEventArgs());
+                    Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
+                    return;
+                }
                 Directory.Delete(Game.InstallDirectory, true);
                 if (!Directory.Exists(Game.InstallDirectory))
                 {
                     InvokeOnUninstalled(new GameUninstalledEventArgs());
+                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"Removed instance {Game.Name} and deleted files");
                     Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
                     return;
                 }
