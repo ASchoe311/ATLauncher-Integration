@@ -84,21 +84,6 @@ namespace ATLauncherInstanceImporter
 
         }
 
-        private string GetInstanceName(string instanceDir)
-        {
-            JsonTextReader reader = new JsonTextReader(new StreamReader(Path.Combine(instanceDir, "instance.json")));
-            while (reader.Read())
-            {
-                if ((string)reader.Value == "name")
-                {
-                    reader.Read();
-                    return (string)reader.Value;
-                }
-            }
-            return null;
-        }
-
-
         private class Instance
         {
             private string _Name = string.Empty;
@@ -123,71 +108,6 @@ namespace ATLauncherInstanceImporter
             }
 
         }
-
-        private List<Instance.Mod> GetModList(string instanceDir)
-        {
-            List<Instance.Mod> modList = new List<Instance.Mod>();
-            logger.Info($"Getting mod list for {Path.GetFileName(instanceDir)}");
-            string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
-            logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
-            dynamic json = JsonConvert.DeserializeObject(jsonFile);
-            logger.Debug($"{json["launcher"]["name"]}");
-            foreach (var mod in json["launcher"]["mods"])
-            {
-                //logger.Debug($"Mod name is {mod["name"]}");
-                List<string> authors = new List<string>();
-                foreach (var auth in mod["curseForgeProject"]["authors"])
-                {
-                    //logger.Debug($"Author is {(string)auth["name"]}");
-                    authors.Add((string)auth["name"]);
-                }
-                modList.Add(new Instance.Mod()
-                {
-                    Name = mod["name"],
-                    Summary = mod["description"],
-                    Authors = authors,
-                    Link = mod["curseForgeProject"]["links"]["websiteUrl"]
-                });
-
-
-            }
-            return modList;
-        }
-
-        //private string GenerateInstanceDescription(string instanceDir)
-        //{
-        //    logger.Info($"Generating description for instance {Path.GetFileName(instanceDir)}");
-        //    var modList = GetModList(instanceDir);
-        //    string description = "";
-        //    if (modList.Count == 0)
-        //    {
-        //        description += "No mods";
-        //        return description;
-        //    }
-        //    description += "<h1><u>Mod List</u></h1>";
-        //    foreach (Instance.Mod mod in modList)
-        //    {
-        //        description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
-        //        string authString = "By";
-        //        //logger.Debug($"{mod.Authors.Count()}");
-        //        for (int i = 0; i < mod.Authors.Count(); i++)
-        //        {
-        //            if (i == mod.Authors.Count() - 1 && i != 0)
-        //            {
-        //                authString += " and";
-        //            }
-        //            authString += " " + mod.Authors[i];
-        //            if (mod.Authors.Count() > 2 && i != mod.Authors.Count() - 1)
-        //            {
-        //                authString += $",";
-        //            }
-
-        //        }
-        //        description += $"<i>{authString}</i>";
-        //        description += $"<h3>{mod.Summary}</h3></p><br>";
-        //    }
-        //    return description;
-        //}
 
         private string GenerateInstanceDescription(Instance instance)
         {
@@ -280,8 +200,7 @@ namespace ATLauncherInstanceImporter
             foreach (var dir in GetInstanceDirs())
             {
                 Instance instance = GetInstanceInfo(dir);
-                //var instName = GetInstanceName(dir);
-                //logger.Info($"Discovered instance \"{instName}\", adding to library");
+                logger.Info($"Discovered instance \"{instance.Name}\", adding to library");
                 games.Add(new GameMetadata()
                 {
                     Name = instance.Name != null ? instance.Name : dir,
