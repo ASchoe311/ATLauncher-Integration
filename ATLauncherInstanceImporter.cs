@@ -122,7 +122,7 @@ namespace ATLauncherInstanceImporter
             foreach (var mod in instance.ModList)
             {
                 description += $"<p><h2><a href={mod.Link}>{mod.Name}</a></h2>";
-                string authString = "By";
+                string authString = mod.Authors.Count == 0 ? "No authors listed" : "By";
                 //logger.Debug($"{mod.Authors.Count()}");
                 for (int i = 0; i < mod.Authors.Count(); i++)
                 {
@@ -169,19 +169,29 @@ namespace ATLauncherInstanceImporter
             string mcVersion = json["id"];
             foreach (var mod in json["launcher"]["mods"])
             {
-                //logger.Debug($"Mod name is {mod["name"]}");
+                logger.Debug($"Mod name is {mod["name"]}");
                 List<string> authors = new List<string>();
-                foreach (var auth in mod["curseForgeProject"]["authors"])
+                string modLink;
+                if (mod["curseForgeProject"] != null)
                 {
-                    //logger.Debug($"Author is {(string)auth["name"]}");
-                    authors.Add((string)auth["name"]);
+                    modLink = mod["curseForgeProject"]["links"]["websiteUrl"];
+                    foreach (var auth in mod["curseForgeProject"]["authors"])
+                    {
+                        //logger.Debug($"Author is {(string)auth["name"]}");
+                        authors.Add((string)auth["name"]);
+                    }
+                }
+                else
+                {
+                    modLink = mod["modrinthProject"]["source_url"];
+                    authors.Add(modLink.Split('/')[3]);
                 }
                 modList.Add(new Instance.Mod()
                 {
                     Name = mod["name"],
                     Summary = mod["description"],
                     Authors = authors,
-                    Link = mod["curseForgeProject"]["links"]["websiteUrl"]
+                    Link = modLink
                 });
             }
             return new Instance()
@@ -200,6 +210,10 @@ namespace ATLauncherInstanceImporter
             foreach (var dir in GetInstanceDirs())
             {
                 Instance instance = GetInstanceInfo(dir);
+                if (instance == null)
+                {
+                    continue;
+                }
                 logger.Info($"Discovered instance \"{instance.Name}\", adding to library");
                 games.Add(new GameMetadata()
                 {
@@ -268,8 +282,49 @@ namespace ATLauncherInstanceImporter
         {
             PlayniteApi.Dialogs.ShowErrorMessage(
                 $"The path to your launcher installation isn't valid:\n{Launcher.InstancePath}",
-                "ATLauncher Integration Plugin Erro"
+                "ATLauncher Integration Plugin Error"
             );
+        }
+
+        public void DisplayUninstallError(Game game)
+        {
+            PlayniteApi.Dialogs.ShowErrorMessage(
+                $"Something went wrong deleting instance folder for {game.Name}",
+                "ATLauncher Integration Instance Uninstaller Error"
+            );
+        }
+
+        public class ATLauncherUninstallController : UninstallController
+        {
+            public ATLauncherUninstallController(Game game) : base(game)
+            {
+                Name = $"Uninstall (delete instance folder for) {game.Name}";
+            }
+
+            public override void Uninstall(UninstallActionArgs args)
+            {
+                logger.Info($"Deleting instance folder for {Game.Name} ({Game.InstallDirectory})");
+                Directory.Delete(Game.InstallDirectory, true);
+                if (!Directory.Exists(Game.InstallDirectory))
+                {
+                    InvokeOnUninstalled(new GameUninstalledEventArgs());
+                    Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
+                    return;
+                }
+                Playnite.SDK.API.Instance.Dialogs.ShowErrorMessage(
+                    $"Something went wrong deleting instance folder for {Game.Name}",
+                    "ATLauncher Integration Instance Uninstaller Error"
+                );
+            }
+        }
+            public override IEnumerable<UninstallController> GetUninstallActions(GetUninstallActionsArgs args)
+        {
+            if (args.Game.PluginId != Id)
+            {
+                yield break;
+            }
+
+            yield return new ATLauncherUninstallController(args.Game);
         }
 
         //public void SetLauncher()
