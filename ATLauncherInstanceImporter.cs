@@ -118,6 +118,7 @@ namespace ATLauncherInstanceImporter
                 description += "<h1>No mods</h1>";
                 return description;
             }
+            description += $"<h1>Contains {instance.ModList.Count} mods</h1>";
             description += "<h1>Mod List</h1><hr>";
             foreach (var mod in instance.ModList)
             {
