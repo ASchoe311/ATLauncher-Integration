@@ -314,7 +314,7 @@ namespace ATLauncherInstanceImporter
                 {
                     Name = instance.Name != null ? instance.Name : dir,
                     InstallDirectory = dir,
-                    GameId = Path.GetFileName(dir).ToLower(),
+                    GameId = "atl-" + Path.GetFileName(dir).ToLower(),
                     GameActions = new List<GameAction>
                     {
                         new GameAction()
