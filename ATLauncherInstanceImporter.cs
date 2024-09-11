@@ -93,16 +93,18 @@ namespace ATLauncherInstanceImporter
             private List<Mod> _ModList = new List<Mod>();
             private List<Link> _PackLinks = new List<Link>();
             private HashSet<MetadataProperty> _Authors = new HashSet<MetadataProperty>();
-            private DateTime _ReleaseDate;
+            private ReleaseDate _ReleaseDate;
             private bool _Vanilla = false;
+            private MetadataNameProperty _PackSource;
 
             public string Name { get => _Name; set => _Name = value; }
             public string MCVer { get => _MCVer; set => _MCVer = value; }
             public List<Mod> ModList { get => _ModList; set => _ModList = value; }
             public List<Link> PackLinks { get => _PackLinks; set => _PackLinks = value; }
             public HashSet<MetadataProperty> Authors { get => _Authors; set => _Authors = value; }
-            public DateTime ReleaseDate { get => _ReleaseDate; set => _ReleaseDate = value; }
+            public ReleaseDate ReleaseDate { get => _ReleaseDate; set => _ReleaseDate = value; }
             public bool Vanilla { get => _Vanilla; set => _Vanilla = value; }
+            public MetadataNameProperty PackSource { get => _PackSource; set => _PackSource = value; }
             public class Mod
             {
                 private string _Name = string.Empty;
@@ -201,6 +203,7 @@ namespace ATLauncherInstanceImporter
             DateTime releaseDate;
             List<Link> packLinks = new List<Link>();
             HashSet<MetadataProperty> packAuthors = new HashSet<MetadataProperty>();
+            MetadataNameProperty packSource;
             if (json["launcher"]["curseForgeProject"] != null)
             {
                 logger.Debug($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
@@ -210,22 +213,26 @@ namespace ATLauncherInstanceImporter
                     packAuthors.Add(new MetadataNameProperty((string)auth["name"]));
                 }
                 packLinks.Add(new Link("CurseForge Page", (string)json["launcher"]["curseForgeProject"]["links"]["websiteUrl"]));
+                packSource = new MetadataNameProperty("CurseForge");
             }
             else if (json["launcher"]["modrinthProject"] != null)
             {
                 releaseDate = DateTime.Parse((string)json["launcher"]["modrinthProject"]["published"]);
                 packAuthors = GetModrinthAuthors((string)json["launcher"]["modrinthProject"]["slug"]);
                 packLinks.Add(new Link("Modrinth Page", "https://modrinth.com/modpack/" + (string)json["launcher"]["modrinthProject"]["slug"]));
+                packSource = new MetadataNameProperty("Modrinth");
             }
             else if (json["launcher"]["technicModpack"] != null)
             {
                 releaseDate = DateTime.Parse((string)json["releaseTime"]);
                 packLinks.Add(new Link("Technic Page", (string)json["launcher"]["technicModpack"]["platformUrl"]));
                 packAuthors.Add(new MetadataNameProperty((string)json["launcher"]["technicModpack"]["user"]));
+                packSource = new MetadataNameProperty("Technic");
             }
             else
             {
                 releaseDate = DateTime.Parse((string)json["releaseTime"]);
+                packSource = new MetadataNameProperty("ATLauncher");
                 //packLink = null;
             }
             foreach (var mod in json["launcher"]["mods"])
@@ -260,13 +267,31 @@ namespace ATLauncherInstanceImporter
                 Name = instanceName,
                 MCVer = mcVersion,
                 ModList = modList,
-                ReleaseDate = releaseDate,
+                ReleaseDate = new ReleaseDate(releaseDate),
                 PackLinks = packLinks,
                 Authors = packAuthors,
-                Vanilla = json["launcher"]["vanillaInstance"]
+                Vanilla = json["launcher"]["vanillaInstance"],
+                PackSource = packSource
             };
         }
 
+        private MetadataNameProperty GetOS()
+        {
+            int platform = (int)Environment.OSVersion.Platform;
+            if (platform == 4 || platform == 128)
+            {
+                return new MetadataNameProperty("Linux");
+            }
+            if (platform == 6)
+            {
+                return new MetadataNameProperty("MacOS");
+            }
+            if (platform == 2)
+            {
+                return new MetadataNameProperty("PC (Windows)");
+            }
+            return new MetadataNameProperty("Other");
+        }
 
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
         {
@@ -277,6 +302,8 @@ namespace ATLauncherInstanceImporter
                 Instance instance = GetInstanceInfo(dir);
                 //dynamic json = JsonConvert.SerializeObject(instance);
                 HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
+                HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
+                if (!instance.Vanilla) { defaultPubs.Add(instance.PackSource); }
                 defaultDevs.Add(new MetadataNameProperty("Mojang Studios"));
                 if (instance == null)
                 {
@@ -308,7 +335,12 @@ namespace ATLauncherInstanceImporter
                     Description = GenerateInstanceDescription(instance),
                     Developers = instance.Vanilla ? defaultDevs : instance.Authors,
                     Links = instance.PackLinks,
-                    ReleaseDate = new ReleaseDate(instance.ReleaseDate)
+                    ReleaseDate = instance.ReleaseDate,
+                    Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
+                    Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
+                    Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
+                    Platforms = new HashSet<MetadataProperty> { GetOS() }
+
                 });
             }
             return games;
