@@ -11,7 +11,7 @@ namespace ATLauncherInstanceImporter
 {
     public class ATLauncherInstanceImporterSettings : ObservableObject
     {
-        private string aTLauncherLoc = string.Empty;
+        private string aTLauncherLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATLauncher");
         private bool showATLauncherConsole = false;
         private bool closeATLOnLaunch = true;
 
