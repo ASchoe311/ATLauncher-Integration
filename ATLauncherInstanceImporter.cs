@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Runtime;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace ATLauncherInstanceImporter
 {
@@ -96,6 +97,10 @@ namespace ATLauncherInstanceImporter
             private ReleaseDate _ReleaseDate;
             private bool _Vanilla = false;
             private MetadataNameProperty _PackSource;
+            private MetadataFile _PackIcon;
+            private string _Description = string.Empty;
+            private MetadataFile _CoverImg;
+            private MetadataFile _BgImg;
 
             public string Name { get => _Name; set => _Name = value; }
             public string MCVer { get => _MCVer; set => _MCVer = value; }
@@ -105,6 +110,10 @@ namespace ATLauncherInstanceImporter
             public ReleaseDate ReleaseDate { get => _ReleaseDate; set => _ReleaseDate = value; }
             public bool Vanilla { get => _Vanilla; set => _Vanilla = value; }
             public MetadataNameProperty PackSource { get => _PackSource; set => _PackSource = value; }
+            public MetadataFile PackIcon { get => _PackIcon; set => _PackIcon = value; }
+            public string Description { get => _Description; set => _Description = value; }
+            public MetadataFile CoverImg {  get => _CoverImg; set => _CoverImg = value; }
+            public MetadataFile BgImg { get => _BgImg; set => _BgImg = value; }
             public class Mod
             {
                 private string _Name = string.Empty;
@@ -124,7 +133,12 @@ namespace ATLauncherInstanceImporter
         private string GenerateInstanceDescription(Instance instance)
         {
             logger.Info($"Generating description for instance {instance.Name}");
-            string description = $"<h1>Minecraft Version: {instance.MCVer}</h1>";
+            string description = string.Empty;
+            if (instance.Description != null)
+            {
+                description = $"<h2>{instance.Description}</h2>";
+            }
+            description += $"<h1>Minecraft Version: {instance.MCVer}</h1>";
             if (instance.Vanilla)
             {
                 description += "<h1>No mods</h1>";
@@ -204,6 +218,12 @@ namespace ATLauncherInstanceImporter
             List<Link> packLinks = new List<Link>();
             HashSet<MetadataProperty> packAuthors = new HashSet<MetadataProperty>();
             MetadataNameProperty packSource;
+            bool isVanilla = json["launcher"]["vanillaInstance"];
+            MetadataFile packIcon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"));
+            string description = json["launcher"]["description"] ?? null;
+            MetadataFile coverImg = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
+            MetadataFile bgImg = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
+            if (isVanilla) { description = "Vanilla " + description; }
             if (json["launcher"]["curseForgeProject"] != null)
             {
                 logger.Debug($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
@@ -212,27 +232,76 @@ namespace ATLauncherInstanceImporter
                 {
                     packAuthors.Add(new MetadataNameProperty((string)auth["name"]));
                 }
-                packLinks.Add(new Link("CurseForge Page", (string)json["launcher"]["curseForgeProject"]["links"]["websiteUrl"]));
+                if (json["launcher"]["curseForgeProject"]["links"]["websiteUrl"] != null)
+                {
+                    packLinks.Add(new Link("CurseForge Page", (string)json["launcher"]["curseForgeProject"]["links"]["websiteUrl"]));
+                }
+                if (json["launcher"]["curseForgeProject"]["links"]["sourceUrl"] != null)
+                {
+                    packLinks.Add(new Link("Modpack Source", (string)json["launcher"]["curseForgeProject"]["links"]["sourceUrl"]));
+                }
+                if (json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"] != null)
+                {
+                    packIcon = new MetadataFile((string)json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"]);
+                }
                 packSource = new MetadataNameProperty("CurseForge");
+                coverImg = GetCoverImage(instanceDir);
+                bgImg = coverImg;
             }
             else if (json["launcher"]["modrinthProject"] != null)
             {
                 releaseDate = DateTime.Parse((string)json["launcher"]["modrinthProject"]["published"]);
                 packAuthors = GetModrinthAuthors((string)json["launcher"]["modrinthProject"]["slug"]);
                 packLinks.Add(new Link("Modrinth Page", "https://modrinth.com/modpack/" + (string)json["launcher"]["modrinthProject"]["slug"]));
+                if (json["launcher"]["modrinthProject"]["icon_url"] != null)
+                {
+                    packIcon = new MetadataFile((string)json["launcher"]["modrinthProject"]["icon_url"]);
+                }
                 packSource = new MetadataNameProperty("Modrinth");
+                coverImg = GetCoverImage(instanceDir);
+                bgImg = coverImg;
             }
             else if (json["launcher"]["technicModpack"] != null)
             {
                 releaseDate = DateTime.Parse((string)json["releaseTime"]);
                 packLinks.Add(new Link("Technic Page", (string)json["launcher"]["technicModpack"]["platformUrl"]));
                 packAuthors.Add(new MetadataNameProperty((string)json["launcher"]["technicModpack"]["user"]));
+                if (json["launcher"]["technicModpack"]["icon"]["url"] != null)
+                {
+                    packIcon = new MetadataFile((string)json["launcher"]["technicModpack"]["icon"]["url"]);
+                }
                 packSource = new MetadataNameProperty("Technic");
+                coverImg = GetCoverImage(instanceDir);
+                bgImg = coverImg;
             }
             else
             {
                 releaseDate = DateTime.Parse((string)json["releaseTime"]);
                 packSource = new MetadataNameProperty("ATLauncher");
+                if (isVanilla)
+                {
+                    packIcon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
+                }
+                else
+                {
+                    packIcon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"));
+                }
+                Regex rgx = new Regex("[^a-zA-Z0-9-]");
+                string packSlug = rgx.Replace((string)json["launcher"]["pack"], "").ToLower();
+                Regex.Replace(packSlug, @"\s+", "");
+                WebClient webClient = new WebClient();
+                try
+                {
+                    var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                    coverImg = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                }
+                catch (Exception e)
+                {
+                    coverImg = GetCoverImage(instanceDir);
+                }
+                logger.Debug($"Trying to pull image from https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                //logger.Debug($"external cover img for{instanceName} has content: {coverImg.Content}");
+                bgImg = coverImg;
                 //packLink = null;
             }
             foreach (var mod in json["launcher"]["mods"])
@@ -270,8 +339,12 @@ namespace ATLauncherInstanceImporter
                 ReleaseDate = new ReleaseDate(releaseDate),
                 PackLinks = packLinks,
                 Authors = packAuthors,
-                Vanilla = json["launcher"]["vanillaInstance"],
-                PackSource = packSource
+                Vanilla = isVanilla,
+                PackSource = packSource,
+                PackIcon = packIcon,
+                Description = description,
+                CoverImg = coverImg,
+                BgImg = bgImg
             };
         }
 
@@ -329,9 +402,9 @@ namespace ATLauncherInstanceImporter
                     },
                     IsInstalled = true,
                     Source = new MetadataNameProperty("ATLauncher"),
-                    Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe")),
-                    CoverImage = GetCoverImage(dir),
-                    BackgroundImage = GetCoverImage(dir),
+                    Icon = instance.PackIcon,
+                    CoverImage = instance.CoverImg,
+                    BackgroundImage = instance.BgImg,
                     Description = GenerateInstanceDescription(instance),
                     Developers = instance.Vanilla ? defaultDevs : instance.Authors,
                     Links = instance.PackLinks,
