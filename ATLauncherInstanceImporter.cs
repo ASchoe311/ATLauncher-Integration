@@ -240,6 +240,10 @@ namespace ATLauncherInstanceImporter
                 {
                     packLinks.Add(new Link("Modpack Source", (string)json["launcher"]["curseForgeProject"]["links"]["sourceUrl"]));
                 }
+                if (json["launcher"]["curseForgeProject"]["links"]["wikiUrl"] != null && json["launcher"]["curseForgeProject"]["links"]["wikiUrl"] != string.Empty)
+                {
+                    packLinks.Add(new Link("Modpack Wiki", (string)json["launcher"]["curseForgeProject"]["links"]["wikiUrl"]));
+                }
                 if (json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"] != null)
                 {
                     packIcon = new MetadataFile((string)json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"]);
@@ -256,6 +260,14 @@ namespace ATLauncherInstanceImporter
                 if (json["launcher"]["modrinthProject"]["icon_url"] != null)
                 {
                     packIcon = new MetadataFile((string)json["launcher"]["modrinthProject"]["icon_url"]);
+                }
+                if (json["launcher"]["modrinthProject"]["source_url"] != null)
+                {
+                    packLinks.Add(new Link("Modpack Source", (string)json["launcher"]["modrinthProject"]["source_url"]));
+                }
+                if (json["launcher"]["modrinthProject"]["wiki_url"] != null && json["launcher"]["modrinthProject"]["wiki_url"] != string.Empty)
+                {
+                    packLinks.Add(new Link("Modpack Wiki", (string)json["launcher"]["modrinthProject"]["wiki_url"]));
                 }
                 packSource = new MetadataNameProperty("Modrinth");
                 coverImg = GetCoverImage(instanceDir);
@@ -278,16 +290,22 @@ namespace ATLauncherInstanceImporter
             {
                 releaseDate = DateTime.Parse((string)json["releaseTime"]);
                 packSource = new MetadataNameProperty("ATLauncher");
+                Regex rgx = new Regex("[^a-zA-Z0-9-]");
+                string packSlug = rgx.Replace((string)json["launcher"]["pack"], "").ToLower();
                 if (isVanilla)
                 {
                     packIcon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
+                    packLinks.Add(new Link("Website", "https://minecraft.net"));
+                    packLinks.Add(new Link("Wiki", "https://minecraft.wiki"));
                 }
                 else
                 {
                     packIcon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"));
+                    if (json["launcher"]["packId"] != 0)
+                    {
+                        packLinks.Add(new Link("ATLauncher Page", $"https://atlauncher.com/pack/{packSlug}"));
+                    }
                 }
-                Regex rgx = new Regex("[^a-zA-Z0-9-]");
-                string packSlug = rgx.Replace((string)json["launcher"]["pack"], "").ToLower();
                 Regex.Replace(packSlug, @"\s+", "");
                 WebClient webClient = new WebClient();
                 try
