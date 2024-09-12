@@ -234,7 +234,8 @@ namespace ATLauncherInstanceImporter
             if (json["launcher"]["curseForgeProject"] != null)
             {
                 logger.Debug($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
-                releaseDate = DateTime.Parse((string)json["launcher"]["curseForgeProject"]["dateReleased"]);
+                bool dtParsed = DateTime.TryParse((string)json["launcher"]["curseForgeProject"]["dateReleased"], out releaseDate);
+                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue");  }
                 foreach (var auth in json["launcher"]["curseForgeProject"]["authors"])
                 {
                     packAuthors.Add(new MetadataNameProperty((string)auth["name"]));
@@ -261,7 +262,8 @@ namespace ATLauncherInstanceImporter
             }
             else if (json["launcher"]["modrinthProject"] != null)
             {
-                releaseDate = DateTime.Parse((string)json["launcher"]["modrinthProject"]["published"]);
+                bool dtParsed = DateTime.TryParse((string)json["launcher"]["modrinthProject"]["published"], out releaseDate);
+                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
                 packAuthors = GetModrinthAuthors((string)json["launcher"]["modrinthProject"]["slug"]);
                 packLinks.Add(new Link("Modrinth Page", "https://modrinth.com/modpack/" + (string)json["launcher"]["modrinthProject"]["slug"]));
                 if (json["launcher"]["modrinthProject"]["icon_url"] != null)
@@ -282,7 +284,8 @@ namespace ATLauncherInstanceImporter
             }
             else if (json["launcher"]["technicModpack"] != null)
             {
-                releaseDate = DateTime.Parse((string)json["releaseTime"]);
+                bool dtParsed = DateTime.TryParse((string)json["releaseTime"], out releaseDate);
+                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
                 packLinks.Add(new Link("Technic Page", (string)json["launcher"]["technicModpack"]["platformUrl"]));
                 packAuthors.Add(new MetadataNameProperty((string)json["launcher"]["technicModpack"]["user"]));
                 if (json["launcher"]["technicModpack"]["icon"]["url"] != null)
@@ -295,10 +298,8 @@ namespace ATLauncherInstanceImporter
             }
             else
             {
-                if (json["releaseTime"] != null)
-                {
-                    releaseDate = DateTime.Parse((string)json["releaseTime"]);
-                }
+                bool dtParsed = DateTime.TryParse((string)json["releaseTime"], out releaseDate);
+                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
                 packSource = new MetadataNameProperty("ATLauncher");
                 Regex rgx = new Regex("[^a-zA-Z0-9-]");
                 string packSlug = rgx.Replace((string)json["launcher"]["pack"], "").ToLower();
