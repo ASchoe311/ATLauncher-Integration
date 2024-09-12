@@ -1,5 +1,11 @@
 ﻿AddonId: ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b
 Packages:
+  - Version: 1.1.2
+    RequiredApiVersion: 6.2.0
+    ReleaseDate: 2024-09-12
+    PackageUrl: https://github.com/ASchoe311/ATLauncher-Integration/releases/download/v1.1.2/ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b_1_1_2.pext
+    Changelog:
+      - Fixed a bug preventing instances from being imported when a release date was improperly formatted or missing
   - Version: 1.1
     RequiredApiVersion: 6.2.0
     ReleaseDate: 2024-09-11
