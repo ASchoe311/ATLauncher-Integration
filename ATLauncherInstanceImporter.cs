@@ -13,6 +13,8 @@ using Newtonsoft.Json.Linq;
 using System.Runtime;
 using System.Net;
 using System.Text.RegularExpressions;
+using Playnite.SDK.Events;
+using System.Reflection;
 
 namespace ATLauncherInstanceImporter
 {
@@ -39,7 +41,12 @@ namespace ATLauncherInstanceImporter
         private static readonly ILogger logger = LogManager.GetLogger();
 
         internal static readonly string AssemblyPath = Path.GetDirectoryName(typeof(ATLauncherInstanceImporter).Assembly.Location);
+
+        private static readonly string iconPath = Path.Combine(AssemblyPath, "icon.png");
+        public override string LibraryIcon { get; } = iconPath;
         private ATLauncherInstanceImporterSettingsViewModel settings { get; set; }
+
+        //private int _PluginVersion = 2;
 
         public override Guid Id { get; } = Guid.Parse("40e56f44-4955-40ec-9bf3-682c4007e55b");
 
@@ -87,7 +94,7 @@ namespace ATLauncherInstanceImporter
 
         }
 
-        private class Instance
+        public class Instance
         {
             private string _Name = string.Empty;
             private string _MCVer = string.Empty;
@@ -181,16 +188,16 @@ namespace ATLauncherInstanceImporter
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
         }
 
-        private MetadataFile GetCoverImage(string instanceDir)
+        private static MetadataFile GetCoverImage(string instanceDir, string launcherLoc)
         {
             if (File.Exists(Path.Combine(instanceDir, "instance.png")))
             {
                 return new MetadataFile(Path.Combine(instanceDir, "instance.png"));
             }
-            return new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
+            return new MetadataFile(Path.Combine(launcherLoc, "configs\\images", "defaultimage.png"));
         }
 
-        private HashSet<MetadataProperty> GetModrinthAuthors(string slug)
+        private static HashSet<MetadataProperty> GetModrinthAuthors(string slug)
         {
             WebClient client = new WebClient();
             var res = client.DownloadString($"https://api.modrinth.com/v2/project/{slug}/members");
@@ -203,7 +210,7 @@ namespace ATLauncherInstanceImporter
             return authors;
         }
 
-        private Instance GetInstanceInfo(string instanceDir)
+        public static Instance GetInstanceInfo(string instanceDir, string launcherLoc)
         {
             logger.Info($"Getting instance information for {Path.GetFileName(instanceDir)}");
             List<Instance.Mod> modList = new List<Instance.Mod>();
@@ -214,15 +221,15 @@ namespace ATLauncherInstanceImporter
             string instanceName = json["launcher"]["name"];
             logger.Debug($"Minecraft version: {json["id"]}");
             string mcVersion = json["id"];
-            DateTime releaseDate;
+            DateTime releaseDate = DateTime.Now;
             List<Link> packLinks = new List<Link>();
             HashSet<MetadataProperty> packAuthors = new HashSet<MetadataProperty>();
             MetadataNameProperty packSource;
             bool isVanilla = json["launcher"]["vanillaInstance"];
-            MetadataFile packIcon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"));
+            MetadataFile packIcon = new MetadataFile(Path.Combine(launcherLoc, "ATLauncher.exe"));
             string description = json["launcher"]["description"] ?? null;
-            MetadataFile coverImg = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
-            MetadataFile bgImg = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png"));
+            MetadataFile coverImg = new MetadataFile(Path.Combine(launcherLoc, "configs\\images", "defaultimage.png"));
+            MetadataFile bgImg = new MetadataFile(Path.Combine(launcherLoc, "configs\\images", "defaultimage.png"));
             if (isVanilla) { description = "Vanilla " + description; }
             if (json["launcher"]["curseForgeProject"] != null)
             {
@@ -249,7 +256,7 @@ namespace ATLauncherInstanceImporter
                     packIcon = new MetadataFile((string)json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"]);
                 }
                 packSource = new MetadataNameProperty("CurseForge");
-                coverImg = GetCoverImage(instanceDir);
+                coverImg = GetCoverImage(instanceDir, launcherLoc);
                 bgImg = coverImg;
             }
             else if (json["launcher"]["modrinthProject"] != null)
@@ -270,7 +277,7 @@ namespace ATLauncherInstanceImporter
                     packLinks.Add(new Link("Modpack Wiki", (string)json["launcher"]["modrinthProject"]["wiki_url"]));
                 }
                 packSource = new MetadataNameProperty("Modrinth");
-                coverImg = GetCoverImage(instanceDir);
+                coverImg = GetCoverImage(instanceDir, launcherLoc);
                 bgImg = coverImg;
             }
             else if (json["launcher"]["technicModpack"] != null)
@@ -283,12 +290,15 @@ namespace ATLauncherInstanceImporter
                     packIcon = new MetadataFile((string)json["launcher"]["technicModpack"]["icon"]["url"]);
                 }
                 packSource = new MetadataNameProperty("Technic");
-                coverImg = GetCoverImage(instanceDir);
+                coverImg = GetCoverImage(instanceDir, launcherLoc);
                 bgImg = coverImg;
             }
             else
             {
-                releaseDate = DateTime.Parse((string)json["releaseTime"]);
+                if (json["releaseTime"] != null)
+                {
+                    releaseDate = DateTime.Parse((string)json["releaseTime"]);
+                }
                 packSource = new MetadataNameProperty("ATLauncher");
                 Regex rgx = new Regex("[^a-zA-Z0-9-]");
                 string packSlug = rgx.Replace((string)json["launcher"]["pack"], "").ToLower();
@@ -300,7 +310,7 @@ namespace ATLauncherInstanceImporter
                 }
                 else
                 {
-                    packIcon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"));
+                    packIcon = new MetadataFile(Path.Combine(launcherLoc, "ATLauncher.exe"));
                     if (json["launcher"]["packId"] != 0)
                     {
                         packLinks.Add(new Link("ATLauncher Page", $"https://atlauncher.com/pack/{packSlug}"));
@@ -315,7 +325,7 @@ namespace ATLauncherInstanceImporter
                 }
                 catch (Exception e)
                 {
-                    coverImg = GetCoverImage(instanceDir);
+                    coverImg = GetCoverImage(instanceDir, launcherLoc);
                 }
                 logger.Debug($"Trying to pull image from https://cdn.atlcdn.net/images/packs/{packSlug}.png");
                 //logger.Debug($"external cover img for{instanceName} has content: {coverImg.Content}");
@@ -371,11 +381,11 @@ namespace ATLauncherInstanceImporter
             int platform = (int)Environment.OSVersion.Platform;
             if (platform == 4 || platform == 128)
             {
-                return new MetadataNameProperty("Linux");
+                return new MetadataNameProperty("PC (Linux)");
             }
             if (platform == 6)
             {
-                return new MetadataNameProperty("MacOS");
+                return new MetadataNameProperty("Macintosh");
             }
             if (platform == 2)
             {
@@ -384,13 +394,39 @@ namespace ATLauncherInstanceImporter
             return new MetadataNameProperty("Other");
         }
 
+        //public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
+        //{
+        //    base.OnApplicationStarted(args);
+        //    logger.Info("Removing previously listed instances");
+        //    if (settings.Settings.PluginVersion != null)
+        //    {
+        //        logger.Info($"Plugin version in settings is {settings.Settings.PluginVersion}, new version is {_PluginVersion}");
+        //    }
+        //    if (settings.Settings.PluginVersion == null || settings.Settings.PluginVersion < _PluginVersion)
+        //    {
+        //        PlayniteApi.Database.Games.BeginBufferUpdate();
+        //        foreach (var game in PlayniteApi.Database.Games)
+        //        {
+        //            if (game.PluginId != Id)
+        //            {
+        //                continue;
+        //            }
+        //            Instance instance = GetInstanceInfo(game.InstallDirectory, settings.Settings.ATLauncherLoc);
+        //            game.GameId = "atl-" + Path.GetFileName(game.InstallDirectory).ToLower();
+        //            game.Icon = instance.PackIcon.ToString();
+        //            //game.DeveloperIds = instance.Authors;
+        //        }
+        //        PlayniteApi.Database.Games.EndBufferUpdate();
+        //    }
+        //}
+
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
         {
             // Return list of user's games.
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                Instance instance = GetInstanceInfo(dir);
+                Instance instance = GetInstanceInfo(dir, settings.Settings.ATLauncherLoc);
                 //dynamic json = JsonConvert.SerializeObject(instance);
                 HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
                 HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
