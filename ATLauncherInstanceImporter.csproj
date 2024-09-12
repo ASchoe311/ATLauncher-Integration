@@ -96,6 +96,6 @@
     <PostBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)postbuild.bat)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>call $(ProjectDir)prebuild.bat</PreBuildEvent>
+    <PreBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)prebuild.bat)</PreBuildEvent>
   </PropertyGroup>
 </Project>
