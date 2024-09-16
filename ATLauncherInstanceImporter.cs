@@ -101,7 +101,7 @@ namespace ATLauncherInstanceImporter
             private List<Mod> _ModList = new List<Mod>();
             private List<Link> _PackLinks = new List<Link>();
             private HashSet<MetadataProperty> _Authors = new HashSet<MetadataProperty>();
-            private ReleaseDate _ReleaseDate;
+            private ReleaseDate _ReleaseDate = new ReleaseDate(DateTime.Now);
             private bool _Vanilla = false;
             private MetadataNameProperty _PackSource;
             private MetadataFile _PackIcon;
@@ -217,7 +217,6 @@ namespace ATLauncherInstanceImporter
             string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
             logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
             dynamic json = JsonConvert.DeserializeObject(jsonFile);
-            if (json == null) { return null; }
             //logger.Debug($"Name: {json["launcher"]["name"]}");
             string instanceName = json["launcher"]["name"];
             //logger.Debug($"Minecraft version: {json["id"]}");
@@ -431,62 +430,86 @@ namespace ATLauncherInstanceImporter
             foreach (var dir in GetInstanceDirs())
             {
                 Instance instance = null;
+                HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
+                HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
                 try
                 {
                     instance = GetInstanceInfo(dir, settings.Settings.ATLauncherLoc);
+                    if (!instance.Vanilla) { defaultPubs.Add(instance.PackSource); }
+                    defaultDevs.Add(new MetadataNameProperty("Mojang Studios"));
+                    if (instance == null)
+                    {
+                        continue;
+                    }
+                    logger.Info($"Discovered instance \"{instance.Name}\", adding to library");
+                    games.Add(new GameMetadata()
+                    {
+                        Name = instance.Name != null ? instance.Name : dir,
+                        InstallDirectory = dir,
+                        GameId = "atl-" + Path.GetFileName(dir).ToLower(),
+                        GameActions = new List<GameAction>
+                        {
+                            new GameAction()
+                            {
+                                Type = GameActionType.File,
+                                Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
+                                Arguments = GetLaunchString(dir),
+                                WorkingDir = settings.Settings.ATLauncherLoc,
+                                TrackingMode = TrackingMode.Default,
+                                IsPlayAction = true
+                            }
+                        },
+                        IsInstalled = true,
+                        Source = new MetadataNameProperty("ATLauncher"),
+                        Icon = instance.PackIcon,
+                        CoverImage = instance.CoverImg,
+                        BackgroundImage = instance.BgImg,
+                        Description = GenerateInstanceDescription(instance),
+                        Developers = instance.Vanilla ? defaultDevs : instance.Authors,
+                        Links = instance.PackLinks,
+                        ReleaseDate = instance.ReleaseDate,
+                        Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
+                        Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
+                        Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
+                        Platforms = new HashSet<MetadataProperty> { GetOS() }
+
+                    });
                 }
                 catch (Exception e)
                 {
-                    logger.Warn($"Skipping import of the instance at {dir} due to the following error: {e.StackTrace}");
-                    continue;
-                }
+                    logger.Warn($"Skipping full metadata import of the instance at {dir} due to the following error: {e.StackTrace}");
+                    games.Add(new GameMetadata()
+                    {
+                        Name = Path.GetFileName(dir),
+                        InstallDirectory = dir,
+                        GameId = "atl-" + Path.GetFileName(dir).ToLower(),
+                        GameActions = new List<GameAction>
+                        {
+                            new GameAction()
+                            {
+                                Type = GameActionType.File,
+                                Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
+                                Arguments = GetLaunchString(dir),
+                                WorkingDir = settings.Settings.ATLauncherLoc,
+                                TrackingMode = TrackingMode.Default,
+                                IsPlayAction = true
+                            }
+                        },
+                        IsInstalled = true,
+                        Source = new MetadataNameProperty("ATLauncher"),
+                        Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe")),
+                        CoverImage = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png")),
+                        BackgroundImage = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png")),
+                        Developers = defaultDevs,
+                        Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
+                        Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
+                        Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
+                        Description = "<h2>No metadata imported due to error in instance scanning</h2>",
+                        Platforms = new HashSet<MetadataProperty> { GetOS() }
 
-                if (instance == null)
-                {
-                    continue;
+                    });
                 }
                 //dynamic json = JsonConvert.SerializeObject(instance);
-                HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
-                HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
-                if (!instance.Vanilla) { defaultPubs.Add(instance.PackSource); }
-                defaultDevs.Add(new MetadataNameProperty("Mojang Studios"));
-                if (instance == null)
-                {
-                    continue;
-                }
-                logger.Info($"Discovered instance \"{instance.Name}\", adding to library");
-                games.Add(new GameMetadata()
-                {
-                    Name = instance.Name != null ? instance.Name : dir,
-                    InstallDirectory = dir,
-                    GameId = "atl-" + Path.GetFileName(dir).ToLower(),
-                    GameActions = new List<GameAction>
-                    {
-                        new GameAction()
-                        {
-                            Type = GameActionType.File,
-                            Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
-                            Arguments = GetLaunchString(dir),
-                            WorkingDir = settings.Settings.ATLauncherLoc,
-                            TrackingMode = TrackingMode.Default,
-                            IsPlayAction = true
-                        }
-                    },
-                    IsInstalled = true,
-                    Source = new MetadataNameProperty("ATLauncher"),
-                    Icon = instance.PackIcon,
-                    CoverImage = instance.CoverImg,
-                    BackgroundImage = instance.BgImg,
-                    Description = GenerateInstanceDescription(instance),
-                    Developers = instance.Vanilla ? defaultDevs : instance.Authors,
-                    Links = instance.PackLinks,
-                    ReleaseDate = instance.ReleaseDate,
-                    Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
-                    Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
-                    Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-                    Platforms = new HashSet<MetadataProperty> { GetOS() }
-
-                });
             }
             return games;
         }
