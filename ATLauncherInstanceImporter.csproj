@@ -93,7 +93,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)postbuild.bat)</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)postbuild.bat $(ConfigurationName))
+if $(ConfigurationName) == Release (call $(ProjectDir)postbuild.bat $(ConfigurationName) $(TargetDir) $(ProjectDir)Packed\)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)prebuild.bat)</PreBuildEvent>

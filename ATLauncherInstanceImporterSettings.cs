@@ -14,10 +14,13 @@ namespace ATLauncherInstanceImporter
         private string aTLauncherLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATLauncher");
         private bool showATLauncherConsole = false;
         private bool closeATLOnLaunch = true;
+        private int _PluginVersion = 1;
 
         public string ATLauncherLoc { get => aTLauncherLoc; set => SetValue(ref aTLauncherLoc, value); }
         public bool ShowATLauncherConsole { get => showATLauncherConsole; set => SetValue(ref showATLauncherConsole, value); }
         public bool CloseATLOnLaunch { get => closeATLOnLaunch; set => SetValue(ref closeATLOnLaunch, value); }
+
+        //public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
         // Playnite serializes settings object to a JSON object and saves it as text file.
         // If you want to exclude some property from being saved then use `JsonDontSerialize` ignore attribute.
         //[DontSerialize]

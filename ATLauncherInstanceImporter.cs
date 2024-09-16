@@ -217,9 +217,10 @@ namespace ATLauncherInstanceImporter
             string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
             logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
             dynamic json = JsonConvert.DeserializeObject(jsonFile);
-            logger.Debug($"Name: {json["launcher"]["name"]}");
+            if (json == null) { return null; }
+            //logger.Debug($"Name: {json["launcher"]["name"]}");
             string instanceName = json["launcher"]["name"];
-            logger.Debug($"Minecraft version: {json["id"]}");
+            //logger.Debug($"Minecraft version: {json["id"]}");
             string mcVersion = json["id"];
             DateTime releaseDate = DateTime.Now;
             List<Link> packLinks = new List<Link>();
@@ -233,18 +234,19 @@ namespace ATLauncherInstanceImporter
             if (isVanilla) { description = "Vanilla " + description; }
             if (json["launcher"]["curseForgeProject"] != null)
             {
-                logger.Debug($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
+                //logger.Debug($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
+                Console.WriteLine($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
                 bool dtParsed = DateTime.TryParse((string)json["launcher"]["curseForgeProject"]["dateReleased"], out releaseDate);
                 if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue");  }
                 foreach (var auth in json["launcher"]["curseForgeProject"]["authors"])
                 {
                     packAuthors.Add(new MetadataNameProperty((string)auth["name"]));
                 }
-                if (json["launcher"]["curseForgeProject"]["links"]["websiteUrl"] != null)
+                if (json["launcher"]["curseForgeProject"]["links"]["websiteUrl"] != null && json["launcher"]["curseForgeProject"]["links"]["websiteUrl"] != string.Empty)
                 {
                     packLinks.Add(new Link("CurseForge Page", (string)json["launcher"]["curseForgeProject"]["links"]["websiteUrl"]));
                 }
-                if (json["launcher"]["curseForgeProject"]["links"]["sourceUrl"] != null)
+                if (json["launcher"]["curseForgeProject"]["links"]["sourceUrl"] != null && json["launcher"]["curseForgeProject"]["links"]["sourceUrl"] != string.Empty)
                 {
                     packLinks.Add(new Link("Modpack Source", (string)json["launcher"]["curseForgeProject"]["links"]["sourceUrl"]));
                 }
@@ -298,6 +300,7 @@ namespace ATLauncherInstanceImporter
             }
             else
             {
+                //releaseDate = DateTime.Parse((string)json["releaseTime"]);
                 bool dtParsed = DateTime.TryParse((string)json["releaseTime"], out releaseDate);
                 if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
                 packSource = new MetadataNameProperty("ATLauncher");
@@ -427,7 +430,21 @@ namespace ATLauncherInstanceImporter
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                Instance instance = GetInstanceInfo(dir, settings.Settings.ATLauncherLoc);
+                Instance instance = null;
+                try
+                {
+                    instance = GetInstanceInfo(dir, settings.Settings.ATLauncherLoc);
+                }
+                catch (Exception e)
+                {
+                    logger.Warn($"Skipping import of the instance at {dir} due to the following error: {e.StackTrace}");
+                    continue;
+                }
+
+                if (instance == null)
+                {
+                    continue;
+                }
                 //dynamic json = JsonConvert.SerializeObject(instance);
                 HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
                 HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
