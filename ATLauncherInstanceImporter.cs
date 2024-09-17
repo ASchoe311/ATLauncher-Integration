@@ -94,91 +94,56 @@ namespace ATLauncherInstanceImporter
 
         }
 
-        public class Instance
+        private string GenerateInstanceDescription(Models.Instance instance)
         {
-            private string _Name = string.Empty;
-            private string _MCVer = string.Empty;
-            private List<Mod> _ModList = new List<Mod>();
-            private List<Link> _PackLinks = new List<Link>();
-            private HashSet<MetadataProperty> _Authors = new HashSet<MetadataProperty>();
-            private ReleaseDate _ReleaseDate = new ReleaseDate(DateTime.Now);
-            private bool _Vanilla = false;
-            private MetadataNameProperty _PackSource;
-            private MetadataFile _PackIcon;
-            private string _Description = string.Empty;
-            private MetadataFile _CoverImg;
-            private MetadataFile _BgImg;
-
-            public string Name { get => _Name; set => _Name = value; }
-            public string MCVer { get => _MCVer; set => _MCVer = value; }
-            public List<Mod> ModList { get => _ModList; set => _ModList = value; }
-            public List<Link> PackLinks { get => _PackLinks; set => _PackLinks = value; }
-            public HashSet<MetadataProperty> Authors { get => _Authors; set => _Authors = value; }
-            public ReleaseDate ReleaseDate { get => _ReleaseDate; set => _ReleaseDate = value; }
-            public bool Vanilla { get => _Vanilla; set => _Vanilla = value; }
-            public MetadataNameProperty PackSource { get => _PackSource; set => _PackSource = value; }
-            public MetadataFile PackIcon { get => _PackIcon; set => _PackIcon = value; }
-            public string Description { get => _Description; set => _Description = value; }
-            public MetadataFile CoverImg {  get => _CoverImg; set => _CoverImg = value; }
-            public MetadataFile BgImg { get => _BgImg; set => _BgImg = value; }
-            public class Mod
-            {
-                private string _Name = string.Empty;
-                private List<string> _Authors = new List<string>();
-                private string _Link = string.Empty;
-                private string _Summary = string.Empty;
-
-                public string Name { get => _Name; set => _Name = value; }
-                public List<string> Authors { get => _Authors; set => _Authors = value; }
-                public string Link { get => _Link; set => _Link = value; }
-                public string Summary { get => _Summary; set => _Summary = value; }
-
-            }
-
-        }
-
-        private string GenerateInstanceDescription(Instance instance)
-        {
-            logger.Info($"Generating description for instance {instance.Name}");
+            //logger.Info($"Generating description for instance {instance.Launcher.Name}");
             string description = string.Empty;
-            if (instance.Description != null)
+            if (instance.Launcher.Description != null)
             {
-                description = $"<h2>{instance.Description}</h2>";
+                description = $"<h2>{instance.Launcher.Description}</h2>";
             }
-            description += $"<h1>Minecraft Version: {instance.MCVer}</h1>";
-            if (instance.Vanilla)
+            description += $"<h1>Minecraft Version: {instance.McVersion}</h1>";
+            if (instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value)
             {
                 description += "<h1>No mods</h1>";
                 return description;
             }
-            description += $"<h1>Contains {instance.ModList.Count} mods</h1>";
+            description += $"<h1>Contains {instance.Launcher.Mods.Count} mods</h1>";
             description += "<h1>Mod List</h1><hr>";
-            foreach (var mod in instance.ModList)
+            foreach (var mod in instance.Launcher.Mods)
             {
                 description += "<p><h2>";
-                description += mod.Link != string.Empty ? $"<a href={mod.Link}>{mod.Name}</a>" : $"{mod.Name}";
-                if (mod.Link != string.Empty)
+                if (mod.CurseForgeProject != null)
                 {
-
+                    description += mod.CurseForgeProject.Links.WebsiteUrl != string.Empty ? $"<a href={mod.CurseForgeProject.Links.WebsiteUrl}>{mod.Name}</a>" : $"{mod.Name}";
+                }
+                else if (mod.ModrinthProject != null)
+                {
+                    description += $"<a href=https://modrinth.com/mod/{mod.ModrinthProject.Slug}>{mod.Name}</a>";
+                }
+                else
+                {
+                    description += $"{mod.Name}";
                 }
                 description += "</h2>";
-                string authString = mod.Authors.Count == 0 ? "No authors listed" : "By";
+                var modAuths = Models.Instance.GetModAuthors(mod);
+                string authString = modAuths.Count == 0 ? "No authors listed" : "By";
                 //logger.Debug($"{mod.Authors.Count()}");
-                for (int i = 0; i < mod.Authors.Count(); i++)
+                for (int i = 0; i < modAuths.Count(); i++)
                 {
-                    if (i == mod.Authors.Count() - 1 && i != 0)
+                    if (i == modAuths.Count() - 1 && i != 0)
                     {
                         authString += " and";
                     }
-                    authString += " " + mod.Authors[i];
-                    if (mod.Authors.Count() > 2 && i != mod.Authors.Count() - 1)
+                    authString += " " + modAuths[i];
+                    if (modAuths.Count() > 2 && i != modAuths.Count() - 1)
                     {
                         authString += $",";
                     }
 
                 }
                 description += $"<i>{authString}</i>";
-                description += $"<h3>{mod.Summary}</h3></p><br>";
+                description += $"<h3>{mod.Description}</h3></p><br>";
             }
             return description;
         }
@@ -186,197 +151,6 @@ namespace ATLauncherInstanceImporter
         private string GetLaunchString(string instanceDir)
         {
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
-        }
-
-        private static MetadataFile GetCoverImage(string instanceDir, string launcherLoc)
-        {
-            if (File.Exists(Path.Combine(instanceDir, "instance.png")))
-            {
-                return new MetadataFile(Path.Combine(instanceDir, "instance.png"));
-            }
-            return new MetadataFile(Path.Combine(launcherLoc, "configs\\images", "defaultimage.png"));
-        }
-
-        private static HashSet<MetadataProperty> GetModrinthAuthors(string slug)
-        {
-            WebClient client = new WebClient();
-            var res = client.DownloadString($"https://api.modrinth.com/v2/project/{slug}/members");
-            dynamic json = JsonConvert.DeserializeObject(res);
-            HashSet<MetadataProperty> authors = new HashSet<MetadataProperty>();
-            foreach (var member in json)
-            {
-                authors.Add(new MetadataNameProperty(member["user"]["username"].ToString()));
-            }
-            return authors;
-        }
-
-        public static Instance GetInstanceInfo(string instanceDir, string launcherLoc)
-        {
-            logger.Info($"Getting instance information for {Path.GetFileName(instanceDir)}");
-            List<Instance.Mod> modList = new List<Instance.Mod>();
-            string jsonFile = File.ReadAllText(Path.Combine(instanceDir, "instance.json"));
-            logger.Debug($"Attempting to deserialize JSON for {Path.Combine(instanceDir, "instance.json")}");
-            dynamic json = JsonConvert.DeserializeObject(jsonFile);
-            //logger.Debug($"Name: {json["launcher"]["name"]}");
-            string instanceName = json["launcher"]["name"];
-            //logger.Debug($"Minecraft version: {json["id"]}");
-            string mcVersion = json["id"];
-            DateTime releaseDate = DateTime.Now;
-            List<Link> packLinks = new List<Link>();
-            HashSet<MetadataProperty> packAuthors = new HashSet<MetadataProperty>();
-            MetadataNameProperty packSource;
-            bool isVanilla = json["launcher"]["vanillaInstance"];
-            MetadataFile packIcon = new MetadataFile(Path.Combine(launcherLoc, "ATLauncher.exe"));
-            string description = json["launcher"]["description"] ?? null;
-            MetadataFile coverImg = new MetadataFile(Path.Combine(launcherLoc, "configs\\images", "defaultimage.png"));
-            MetadataFile bgImg = new MetadataFile(Path.Combine(launcherLoc, "configs\\images", "defaultimage.png"));
-            if (isVanilla) { description = "Vanilla " + description; }
-            if (json["launcher"]["curseForgeProject"] != null)
-            {
-                //logger.Debug($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
-                Console.WriteLine($"Release datetime: {json["launcher"]["curseForgeProject"]["dateReleased"]}");
-                bool dtParsed = DateTime.TryParse((string)json["launcher"]["curseForgeProject"]["dateReleased"], out releaseDate);
-                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue");  }
-                foreach (var auth in json["launcher"]["curseForgeProject"]["authors"])
-                {
-                    packAuthors.Add(new MetadataNameProperty((string)auth["name"]));
-                }
-                if (json["launcher"]["curseForgeProject"]["links"]["websiteUrl"] != null && json["launcher"]["curseForgeProject"]["links"]["websiteUrl"] != string.Empty)
-                {
-                    packLinks.Add(new Link("CurseForge Page", (string)json["launcher"]["curseForgeProject"]["links"]["websiteUrl"]));
-                }
-                if (json["launcher"]["curseForgeProject"]["links"]["sourceUrl"] != null && json["launcher"]["curseForgeProject"]["links"]["sourceUrl"] != string.Empty)
-                {
-                    packLinks.Add(new Link("Modpack Source", (string)json["launcher"]["curseForgeProject"]["links"]["sourceUrl"]));
-                }
-                if (json["launcher"]["curseForgeProject"]["links"]["wikiUrl"] != null && json["launcher"]["curseForgeProject"]["links"]["wikiUrl"] != string.Empty)
-                {
-                    packLinks.Add(new Link("Modpack Wiki", (string)json["launcher"]["curseForgeProject"]["links"]["wikiUrl"]));
-                }
-                if (json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"] != null)
-                {
-                    packIcon = new MetadataFile((string)json["launcher"]["curseForgeProject"]["logo"]["thumbnailUrl"]);
-                }
-                packSource = new MetadataNameProperty("CurseForge");
-                coverImg = GetCoverImage(instanceDir, launcherLoc);
-                bgImg = coverImg;
-            }
-            else if (json["launcher"]["modrinthProject"] != null)
-            {
-                bool dtParsed = DateTime.TryParse((string)json["launcher"]["modrinthProject"]["published"], out releaseDate);
-                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
-                packAuthors = GetModrinthAuthors((string)json["launcher"]["modrinthProject"]["slug"]);
-                packLinks.Add(new Link("Modrinth Page", "https://modrinth.com/modpack/" + (string)json["launcher"]["modrinthProject"]["slug"]));
-                if (json["launcher"]["modrinthProject"]["icon_url"] != null)
-                {
-                    packIcon = new MetadataFile((string)json["launcher"]["modrinthProject"]["icon_url"]);
-                }
-                if (json["launcher"]["modrinthProject"]["source_url"] != null)
-                {
-                    packLinks.Add(new Link("Modpack Source", (string)json["launcher"]["modrinthProject"]["source_url"]));
-                }
-                if (json["launcher"]["modrinthProject"]["wiki_url"] != null && json["launcher"]["modrinthProject"]["wiki_url"] != string.Empty)
-                {
-                    packLinks.Add(new Link("Modpack Wiki", (string)json["launcher"]["modrinthProject"]["wiki_url"]));
-                }
-                packSource = new MetadataNameProperty("Modrinth");
-                coverImg = GetCoverImage(instanceDir, launcherLoc);
-                bgImg = coverImg;
-            }
-            else if (json["launcher"]["technicModpack"] != null)
-            {
-                bool dtParsed = DateTime.TryParse((string)json["releaseTime"], out releaseDate);
-                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
-                packLinks.Add(new Link("Technic Page", (string)json["launcher"]["technicModpack"]["platformUrl"]));
-                packAuthors.Add(new MetadataNameProperty((string)json["launcher"]["technicModpack"]["user"]));
-                if (json["launcher"]["technicModpack"]["icon"]["url"] != null)
-                {
-                    packIcon = new MetadataFile((string)json["launcher"]["technicModpack"]["icon"]["url"]);
-                }
-                packSource = new MetadataNameProperty("Technic");
-                coverImg = GetCoverImage(instanceDir, launcherLoc);
-                bgImg = coverImg;
-            }
-            else
-            {
-                //releaseDate = DateTime.Parse((string)json["releaseTime"]);
-                bool dtParsed = DateTime.TryParse((string)json["releaseTime"], out releaseDate);
-                if (!dtParsed) { logger.Warn("Failed to parse release datetime, defaulting to DateTime.MinValue"); }
-                packSource = new MetadataNameProperty("ATLauncher");
-                Regex rgx = new Regex("[^a-zA-Z0-9-]");
-                string packSlug = rgx.Replace((string)json["launcher"]["pack"], "").ToLower();
-                if (isVanilla)
-                {
-                    packIcon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
-                    packLinks.Add(new Link("Website", "https://minecraft.net"));
-                    packLinks.Add(new Link("Wiki", "https://minecraft.wiki"));
-                }
-                else
-                {
-                    packIcon = new MetadataFile(Path.Combine(launcherLoc, "ATLauncher.exe"));
-                    if (json["launcher"]["packId"] != 0)
-                    {
-                        packLinks.Add(new Link("ATLauncher Page", $"https://atlauncher.com/pack/{packSlug}"));
-                    }
-                }
-                Regex.Replace(packSlug, @"\s+", "");
-                WebClient webClient = new WebClient();
-                try
-                {
-                    var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                    coverImg = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                }
-                catch (Exception e)
-                {
-                    coverImg = GetCoverImage(instanceDir, launcherLoc);
-                }
-                logger.Debug($"Trying to pull image from https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                //logger.Debug($"external cover img for{instanceName} has content: {coverImg.Content}");
-                bgImg = coverImg;
-                //packLink = null;
-            }
-            foreach (var mod in json["launcher"]["mods"])
-            {
-                //logger.Debug($"Mod name is {mod["name"]}");
-                List<string> authors = new List<string>();
-                string modLink = string.Empty;
-                if (mod["curseForgeProject"] != null)
-                {
-                    modLink = mod["curseForgeProject"]["links"]["websiteUrl"];
-                    foreach (var auth in mod["curseForgeProject"]["authors"])
-                    {
-                        //logger.Debug($"Author is {(string)auth["name"]}");
-                        authors.Add((string)auth["name"]);
-                    }
-                }
-                else if (mod["modrinthProject"] != null)
-                {
-                    modLink = mod["modrinthProject"]["source_url"];
-                    authors.Add(modLink.Split('/')[3]);
-                }
-                modList.Add(new Instance.Mod()
-                {
-                    Name = mod["name"],
-                    Summary = mod["description"],
-                    Authors = authors,
-                    Link = modLink
-                });
-            }
-            return new Instance()
-            {
-                Name = instanceName,
-                MCVer = mcVersion,
-                ModList = modList,
-                ReleaseDate = new ReleaseDate(releaseDate),
-                PackLinks = packLinks,
-                Authors = packAuthors,
-                Vanilla = isVanilla,
-                PackSource = packSource,
-                PackIcon = packIcon,
-                Description = description,
-                CoverImg = coverImg,
-                BgImg = bgImg
-            };
         }
 
         private MetadataNameProperty GetOS()
@@ -429,22 +203,17 @@ namespace ATLauncherInstanceImporter
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                Instance instance = null;
                 HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
                 HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
                 try
                 {
-                    instance = GetInstanceInfo(dir, settings.Settings.ATLauncherLoc);
-                    if (!instance.Vanilla) { defaultPubs.Add(instance.PackSource); }
-                    defaultDevs.Add(new MetadataNameProperty("Mojang Studios"));
-                    if (instance == null)
-                    {
-                        continue;
-                    }
-                    logger.Info($"Discovered instance \"{instance.Name}\", adding to library");
+                    string jsonStr = File.ReadAllText(Path.Combine(dir, "instance.json"));
+                    logger.Info($"Discovered instance folder\"{dir}\", adding to library");
+                    Models.Instance instance = Models.Instance.FromJson(jsonStr);
+                    Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
                     games.Add(new GameMetadata()
                     {
-                        Name = instance.Name != null ? instance.Name : dir,
+                        Name = instance.Launcher.Name != null ? instance.Launcher.Name : instance.Launcher.Pack,
                         InstallDirectory = dir,
                         GameId = "atl-" + Path.GetFileName(dir).ToLower(),
                         GameActions = new List<GameAction>
@@ -461,15 +230,15 @@ namespace ATLauncherInstanceImporter
                         },
                         IsInstalled = true,
                         Source = new MetadataNameProperty("ATLauncher"),
-                        Icon = instance.PackIcon,
-                        CoverImage = instance.CoverImg,
-                        BackgroundImage = instance.BgImg,
+                        Icon = imgs.Item1,
+                        CoverImage = imgs.Item2,
+                        BackgroundImage = imgs.Item2,
                         Description = GenerateInstanceDescription(instance),
-                        Developers = instance.Vanilla ? defaultDevs : instance.Authors,
-                        Links = instance.PackLinks,
-                        ReleaseDate = instance.ReleaseDate,
+                        Developers = instance.GetPackAuthors(),
+                        Links = instance.GetPackLinks(),
+                        ReleaseDate = instance.GetReleaseDate(),
                         Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
-                        Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
+                        Publishers = instance.GetInstancePublishers(),
                         Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
                         Platforms = new HashSet<MetadataProperty> { GetOS() }
 
@@ -504,7 +273,7 @@ namespace ATLauncherInstanceImporter
                         Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
                         Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
                         Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-                        Description = "<h2>No metadata imported due to error in instance scanning</h2>",
+                        Description = $"<h2>No metadata imported due to error in instance scanning, please report the following stacktrace as an issue on github: \n{e.StackTrace}</h2>",
                         Platforms = new HashSet<MetadataProperty> { GetOS() }
 
                     });
@@ -597,11 +366,5 @@ namespace ATLauncherInstanceImporter
 
             yield return new ATLauncherUninstallController(args.Game);
         }
-
-        //public void SetLauncher()
-        //{
-
-        //}
-
     }
 }
