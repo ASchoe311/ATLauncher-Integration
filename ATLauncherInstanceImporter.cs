@@ -94,60 +94,6 @@ namespace ATLauncherInstanceImporter
 
         }
 
-        private string GenerateInstanceDescription(Models.Instance instance)
-        {
-            //logger.Info($"Generating description for instance {instance.Launcher.Name}");
-            string description = string.Empty;
-            if (instance.Launcher.Description != null)
-            {
-                description = $"<h2>{instance.Launcher.Description}</h2>";
-            }
-            description += $"<h1>Minecraft Version: {instance.McVersion}</h1>";
-            if (instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value)
-            {
-                description += "<h1>No mods</h1>";
-                return description;
-            }
-            description += $"<h1>Contains {instance.Launcher.Mods.Count} mods</h1>";
-            description += "<h1>Mod List</h1><hr>";
-            foreach (var mod in instance.Launcher.Mods)
-            {
-                description += "<p><h2>";
-                if (mod.CurseForgeProject != null)
-                {
-                    description += mod.CurseForgeProject.Links.WebsiteUrl != string.Empty ? $"<a href={mod.CurseForgeProject.Links.WebsiteUrl}>{mod.Name}</a>" : $"{mod.Name}";
-                }
-                else if (mod.ModrinthProject != null)
-                {
-                    description += $"<a href=https://modrinth.com/mod/{mod.ModrinthProject.Slug}>{mod.Name}</a>";
-                }
-                else
-                {
-                    description += $"{mod.Name}";
-                }
-                description += "</h2>";
-                var modAuths = Models.Instance.GetModAuthors(mod);
-                string authString = modAuths.Count == 0 ? "No authors listed" : "By";
-                //logger.Debug($"{mod.Authors.Count()}");
-                for (int i = 0; i < modAuths.Count(); i++)
-                {
-                    if (i == modAuths.Count() - 1 && i != 0)
-                    {
-                        authString += " and";
-                    }
-                    authString += " " + modAuths[i];
-                    if (modAuths.Count() > 2 && i != modAuths.Count() - 1)
-                    {
-                        authString += $",";
-                    }
-
-                }
-                description += $"<i>{authString}</i>";
-                description += $"<h3>{mod.Description}</h3></p><br>";
-            }
-            return description;
-        }
-
         private string GetLaunchString(string instanceDir)
         {
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
@@ -197,24 +143,22 @@ namespace ATLauncherInstanceImporter
         //    }
         //}
 
+        public Models.Instance GetInstance(string instanceDir)
+        {
+            return Models.Instance.FromJson(File.ReadAllText(Path.Combine(instanceDir, "instance.json")));
+        }
+
         public override IEnumerable<GameMetadata> GetGames(LibraryGetGamesArgs args)
         {
             // Return list of user's games.
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                HashSet<MetadataProperty> defaultDevs = new HashSet<MetadataProperty>();
-                HashSet<MetadataProperty> defaultPubs = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
-                try
-                {
-                    string jsonStr = File.ReadAllText(Path.Combine(dir, "instance.json"));
                     logger.Info($"Discovered instance folder\"{dir}\", adding to library");
-                    Models.Instance instance = Models.Instance.FromJson(jsonStr);
-                    Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
                     games.Add(new GameMetadata()
                     {
-                        Name = instance.Launcher.Name != null ? instance.Launcher.Name : instance.Launcher.Pack,
                         InstallDirectory = dir,
+                        IsInstalled = true,
                         GameId = "atl-" + Path.GetFileName(dir).ToLower(),
                         GameActions = new List<GameAction>
                         {
@@ -227,62 +171,16 @@ namespace ATLauncherInstanceImporter
                                 TrackingMode = TrackingMode.Default,
                                 IsPlayAction = true
                             }
-                        },
-                        IsInstalled = true,
-                        Source = new MetadataNameProperty("ATLauncher"),
-                        Icon = imgs.Item1,
-                        CoverImage = imgs.Item2,
-                        BackgroundImage = imgs.Item2,
-                        Description = GenerateInstanceDescription(instance),
-                        Developers = instance.GetPackAuthors(),
-                        Links = instance.GetPackLinks(),
-                        ReleaseDate = instance.GetReleaseDate(),
-                        Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
-                        Publishers = instance.GetInstancePublishers(),
-                        Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-                        Platforms = new HashSet<MetadataProperty> { GetOS() }
-
+                        }
                     });
                 }
-                catch (Exception e)
-                {
-                    logger.Warn($"Skipping full metadata import of the instance at {dir} due to the following error: {e.StackTrace}");
-                    games.Add(new GameMetadata()
-                    {
-                        Name = Path.GetFileName(dir),
-                        InstallDirectory = dir,
-                        GameId = "atl-" + Path.GetFileName(dir).ToLower(),
-                        GameActions = new List<GameAction>
-                        {
-                            new GameAction()
-                            {
-                                Type = GameActionType.File,
-                                Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
-                                Arguments = GetLaunchString(dir),
-                                WorkingDir = settings.Settings.ATLauncherLoc,
-                                TrackingMode = TrackingMode.Default,
-                                IsPlayAction = true
-                            }
-                        },
-                        IsInstalled = true,
-                        Source = new MetadataNameProperty("ATLauncher"),
-                        Icon = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe")),
-                        CoverImage = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png")),
-                        BackgroundImage = new MetadataFile(Path.Combine(settings.Settings.ATLauncherLoc, "configs\\images", "defaultimage.png")),
-                        Developers = defaultDevs,
-                        Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
-                        Publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") },
-                        Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-                        Description = $"<h2>No metadata imported due to error in instance scanning, please report the following stacktrace as an issue on github: \n{e.StackTrace}</h2>",
-                        Platforms = new HashSet<MetadataProperty> { GetOS() }
-
-                    });
-                }
-                //dynamic json = JsonConvert.SerializeObject(instance);
-            }
             return games;
         }
 
+        public override LibraryMetadataProvider GetMetadataDownloader()
+        {
+            return new ATLauncherMetadataProvider(this);
+        }
         public override ISettings GetSettings(bool firstRunSettings)
         {
             return settings;

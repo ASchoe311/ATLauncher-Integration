@@ -57,6 +57,7 @@
     <Compile Include="ATLauncherInstanceImporterSettingsView.xaml.cs">
       <DependentUpon>ATLauncherInstanceImporterSettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ATLauncherMetadataProvider.cs" />
     <Compile Include="Models\Instance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
