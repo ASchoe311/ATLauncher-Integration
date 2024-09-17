@@ -8,7 +8,9 @@
     using System.Net;
     using System.Net.Http;
     using System.Text.RegularExpressions;
+    using System.Windows.Data;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
     using Playnite;
     using Playnite.SDK;
     using Playnite.SDK.Models;
@@ -51,21 +53,25 @@
             return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
         }
 
-        public MetadataNameProperty GetPackSource()
+        public HashSet<MetadataProperty> GetInstancePublishers()
         {
+            HashSet<MetadataProperty> publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
             switch (PackSource())
             {
                 case SourceEnum.CurseForge:
-                    return new MetadataNameProperty("CurseForge");
+                    publishers.Add(new MetadataNameProperty("CurseForge"));
+                    break;
                 case SourceEnum.Modrinth:
-                    return new MetadataNameProperty("Modrinth");
+                    publishers.Add(new MetadataNameProperty("Modrinth"));
+                    break;
                 case SourceEnum.Technic:
-                    return new MetadataNameProperty("Technic");
+                    publishers.Add(new MetadataNameProperty("Technic"));
+                    break;
                 case SourceEnum.ATLauncher:
-                    return new MetadataNameProperty("ATLauncher");
-                default:
-                    return new MetadataNameProperty("Mojang Studios");
+                    publishers.Add(new MetadataNameProperty("ATLauncher"));
+                    break;
             }
+            return publishers;
         }
 
         public HashSet<MetadataProperty> GetPackAuthors()
@@ -78,17 +84,19 @@
                     {
                         authors.Add(new MetadataNameProperty(auth.Name));
                     }
-                    return authors;
+                    break;
                 case SourceEnum.Modrinth:
                     try
                     {
-                        WebRequest request = WebRequest.Create($"https://api.modrinth.com/v2/project/{Launcher.ModrinthProject.Slug}/members");
-                        request.Timeout = 5000;
-                        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                        Stream dataStream = response.GetResponseStream();
-                        StreamReader reader = new StreamReader(dataStream);
-                        string responseFromServer = reader.ReadToEnd();
+                        //WebRequest request = WebRequest.Create($"https://api.modrinth.com/v2/project/{Launcher.ModrinthProject.Slug}/members");
+                        //request.Timeout = 5000;
+                        //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                        //Stream dataStream = response.GetResponseStream();
+                        //StreamReader reader = new StreamReader(dataStream);
+                        //string responseFromServer = reader.ReadToEnd();
                         //Console.WriteLine(responseFromServer.Trim('[').Trim(']'));
+                        WebClient webClient = new WebClient();
+                        var responseFromServer = webClient.DownloadString($"https://api.modrinth.com/v2/project/{Launcher.ModrinthProject.Slug}/members");
                         dynamic json = JsonConvert.DeserializeObject(responseFromServer);
                         foreach (var member in json)
                         {
@@ -99,13 +107,18 @@
                     {
                         logger.Warn($"Failed to request modpack authors from Modrinth with error message: {e.Message}");
                     }
-                    return authors;
+                    break;
                 case SourceEnum.Technic:
                     authors.Add(new MetadataNameProperty(Launcher.TechnicModpack.Author));
-                    return authors;
-                default:
-                    return authors;
+                    break;
+                case SourceEnum.ATLauncher:
+                    authors.Add(new MetadataNameProperty("ATLauncher"));
+                    break;
+                case SourceEnum.Vanilla:
+                    authors.Add(new MetadataNameProperty("Mojang Studios"));
+                    break;
             }
+            return authors;
         }
 
         public static List<string> GetModAuthors(Mod mod)
@@ -122,13 +135,15 @@
             {
                 try
                 {
-                    WebRequest request = WebRequest.Create($"https://api.modrinth.com/v2/project/{mod.ModrinthProject.Slug}/members");
-                    request.Timeout = 5000;
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                    Stream dataStream = response.GetResponseStream();
-                    StreamReader reader = new StreamReader(dataStream);
-                    string responseFromServer = reader.ReadToEnd();
+                    //WebRequest request = WebRequest.Create($"https://api.modrinth.com/v2/project/{mod.ModrinthProject.Slug}/members");
+                    //request.Timeout = 5000;
+                    //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    //Stream dataStream = response.GetResponseStream();
+                    //StreamReader reader = new StreamReader(dataStream);
+                    //string responseFromServer = reader.ReadToEnd();
                     //Console.WriteLine(responseFromServer.Trim('[').Trim(']'));
+                    WebClient webClient = new WebClient();
+                    var responseFromServer = webClient.DownloadString($"https://api.modrinth.com/v2/project/{mod.ModrinthProject.Slug}/members");
                     dynamic json = JsonConvert.DeserializeObject(responseFromServer);
                     foreach (var member in json)
                     {
@@ -229,16 +244,50 @@
                     }
                     break;
                 case SourceEnum.ATLauncher:
-                    Regex rgx = new Regex("[^a-zA-Z0-9-]");
-                    string packSlug = rgx.Replace(instance.Launcher.Pack.ToLower(), "");
-                    packSlug = Regex.Replace(packSlug, @"\s+", "");
-                    cover = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                    try
+                    {
+                        Regex rgx = new Regex("[^a-zA-Z0-9-]");
+                        string packSlug = rgx.Replace(instance.Launcher.Pack.ToLower(), "");
+                        packSlug = Regex.Replace(packSlug, @"\s+", "");
+                        WebClient webClient = new WebClient();
+                        var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                        cover = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Warn($"Failed to fetch cover for pack {instanceDir}, setting to default");
+                    }                    
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
                     break;
             }
             return Tuple.Create(icon, cover);
+        }
+
+        public ReleaseDate? GetReleaseDate()
+        {
+            switch (PackSource())
+            {
+                case SourceEnum.CurseForge:
+                    if (Launcher.CurseForgeProject.DateReleased.HasValue)
+                    {
+                        return new ReleaseDate(Launcher.CurseForgeProject.DateReleased.Value.UtcDateTime);
+                    }
+                    return null;
+                case SourceEnum.Modrinth:
+                    if (Launcher.ModrinthProject.DateReleased.HasValue)
+                    {
+                        return new ReleaseDate(Launcher.ModrinthProject.DateReleased.Value.UtcDateTime);
+                    }
+                    return null;
+                default:
+                    if (ReleaseTime.HasValue)
+                    {
+                        return new ReleaseDate(ReleaseTime.Value.UtcDateTime);
+                    }
+                    return null;
+            }
         }
     }
 
@@ -376,14 +425,32 @@
 
     public partial class Instance
     {
-        public static Instance FromJson(string json) => JsonConvert.DeserializeObject<Instance>(json);
+        //private static JsonSerializerSettings settings = new JsonSerializerSettings { Error = (se, ev) => { ev.ErrorContext.Handled = true; } };
+        public static Instance FromJson(string json) => JsonConvert.DeserializeObject<Instance>(json, Models.Converter.Settings);
     }
 
     public static class Serialize
     {
         public static string ToJson(this Instance self) => JsonConvert.SerializeObject(self);
     }
-
-
+    internal static class Converter
+    {
+        private static readonly ILogger logger = LogManager.GetLogger();
+        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        {
+            Error = delegate(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                logger.Warn($"Encountered an error deserializing property {args.ErrorContext.Member} of {args.ErrorContext.OriginalObject}:\n {args.ErrorContext.Error.Message} {args.ErrorContext.Error.InnerException}\n" + 
+                    "Attempting to set property to null and continue");
+                args.ErrorContext.Handled = true;
+            },
+            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+            DateParseHandling = DateParseHandling.None,
+            Converters =
+            {
+                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+            },
+        };
+    }
 
 }
