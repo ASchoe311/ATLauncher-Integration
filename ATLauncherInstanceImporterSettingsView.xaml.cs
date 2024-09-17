@@ -11,15 +11,33 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.IO;
 using System.Windows.Shapes;
+using Playnite;
+using Playnite.SDK;
 
 namespace ATLauncherInstanceImporter
 {
     public partial class ATLauncherInstanceImporterSettingsView : UserControl
     {
+        private IPlayniteAPI playniteAPI = API.Instance;
         public ATLauncherInstanceImporterSettingsView()
         {
             InitializeComponent();
         }
+
+        private void ChooseATLauncherBtn(Object sender, RoutedEventArgs e)
+        {
+            var folder = playniteAPI.Dialogs.SelectFolder();
+            if (File.Exists(System.IO.Path.Combine(folder, "ATLauncher.exe")))
+            {
+                ATLauncherPathTxt.Text = folder;
+            }
+            else
+            {
+                playniteAPI.Dialogs.ShowMessage("ATLauncher.exe not found at selected folder, setting will not be changed.");
+            }
+        }
+
     }
 }

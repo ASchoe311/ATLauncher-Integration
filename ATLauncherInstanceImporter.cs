@@ -69,7 +69,7 @@ namespace ATLauncherInstanceImporter
             };
             Client =  new ATLauncherInstanceImporterClient(this);
         }
-        private void SetClient()
+        public void SetClient()
         {
             Launcher = new ATLauncher(settings.Settings.ATLauncherLoc);
         }
@@ -154,9 +154,48 @@ namespace ATLauncherInstanceImporter
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                    logger.Info($"Discovered instance folder\"{dir}\", adding to library");
+                logger.Info($"Discovered instance folder\"{dir}\", adding to library");
+                Models.Instance instance = GetInstance(dir);
+                Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
+                if (settings.Settings.AddMetadataOnImport)
+                {
                     games.Add(new GameMetadata()
                     {
+                        Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                        InstallDirectory = dir,
+                        IsInstalled = true,
+                        GameId = "atl-" + Path.GetFileName(dir).ToLower(),
+                        GameActions = new List<GameAction>
+                        {
+                            new GameAction()
+                            {
+                                Type = GameActionType.File,
+                                Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
+                                Arguments = GetLaunchString(dir),
+                                WorkingDir = settings.Settings.ATLauncherLoc,
+                                TrackingMode = TrackingMode.Default,
+                                IsPlayAction = true
+                            }
+                        },
+                        Description = ATLauncherMetadataProvider.GenerateInstanceDescription(instance),
+                        Source = new MetadataNameProperty("ATLauncher"),
+                        Developers = instance.GetPackAuthors(),
+                        Links = instance.GetPackLinks(),
+                        ReleaseDate = instance.GetReleaseDate(),
+                        Publishers = instance.GetInstancePublishers(),
+                        Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
+                        Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
+                        Platforms = new HashSet<MetadataProperty> { GetOS() },
+                        Icon = imgs.Item1,
+                        CoverImage = imgs.Item2,
+                        BackgroundImage = imgs.Item2
+                    });
+                }
+                else
+                {
+                    games.Add(new GameMetadata()
+                    {
+                        Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
                         InstallDirectory = dir,
                         IsInstalled = true,
                         GameId = "atl-" + Path.GetFileName(dir).ToLower(),
@@ -174,6 +213,7 @@ namespace ATLauncherInstanceImporter
                         }
                     });
                 }
+            }
             return games;
         }
 

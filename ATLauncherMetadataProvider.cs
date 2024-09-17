@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace ATLauncherInstanceImporter
@@ -24,42 +25,27 @@ namespace ATLauncherInstanceImporter
             Models.Instance instance = _plugin.GetInstance(game.InstallDirectory);
             //logger.Debug(Playnite.SDK.Data.Serialization.ToJson(instance));
             Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, game.InstallDirectory);
-            //var metaData = new GameMetadata()
-            //{
-            //    Name = instance.Launcher.Name ?? instance.Launcher.Pack,
-            //    Description = GenerateInstanceDescription(instance),
-            //    IsInstalled = true,
-            //    Source = new MetadataNameProperty("ATLauncher"),
-            //    Icon = imgs.Item1,
-            //    CoverImage = imgs.Item2,
-            //    BackgroundImage = imgs.Item2,
-            //    Developers = instance.GetPackAuthors(),
-            //    Links = instance.GetPackLinks(),
-            //    ReleaseDate = instance.GetReleaseDate(),
-            //    Publishers = instance.GetInstancePublishers(),
-            //    Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
-            //    Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-            //    Platforms = new HashSet<MetadataProperty> { GetOS() }
-            //};
-            var metaData = new GameMetadata { };
-            metaData.Name = instance.Launcher.Name ?? instance.Launcher.Pack;
-            metaData.Description = GenerateInstanceDescription(instance);
-            metaData.IsInstalled = true;
-            metaData.Source = new MetadataNameProperty("ATLauncher");
-            metaData.Icon = imgs.Item1;
-            metaData.CoverImage = imgs.Item2;
-            metaData.BackgroundImage = imgs.Item2;
-            metaData.Developers = instance.GetPackAuthors();
-            metaData.Links = instance.GetPackLinks();
-            metaData.ReleaseDate = instance.GetReleaseDate();
-            metaData.Publishers = instance.GetInstancePublishers();
-            metaData.Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") };
-            metaData.Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") };
-            metaData.Platforms = new HashSet<MetadataProperty> { GetOS() };
+            var metaData = new GameMetadata()
+            {
+                Description = GenerateInstanceDescription(instance),
+                IsInstalled = true,
+                Source = new MetadataNameProperty("ATLauncher"),
+                Developers = instance.GetPackAuthors(),
+                Links = instance.GetPackLinks(),
+                ReleaseDate = instance.GetReleaseDate(),
+                Publishers = instance.GetInstancePublishers(),
+                Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
+                Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
+                Platforms = new HashSet<MetadataProperty> { GetOS() },
+                Name = instance.Launcher.Name ?? instance.Launcher.Pack,
+                Icon = imgs.Item1,
+                CoverImage = imgs.Item2,
+                BackgroundImage = imgs.Item2
+            };
             return metaData;
         }
 
-        private string GenerateInstanceDescription(Models.Instance instance)
+        public static string GenerateInstanceDescription(Models.Instance instance)
         {
             //logger.Info($"Generating description for instance {instance.Launcher.Name}");
             string description = string.Empty;
@@ -113,7 +99,7 @@ namespace ATLauncherInstanceImporter
             return description;
         }
 
-        private MetadataNameProperty GetOS()
+        public static MetadataNameProperty GetOS()
         {
             int platform = (int)Environment.OSVersion.Platform;
             if (platform == 4 || platform == 128)
