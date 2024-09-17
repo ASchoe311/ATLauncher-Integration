@@ -5,12 +5,25 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600">
+    <UserControl.Resources>
+        <FontFamily x:Key="FontIcoFont">/Fonts/icofont.ttf#icofont</FontFamily>
+    </UserControl.Resources>
 	<StackPanel>
-		<TextBlock Text="Location of ATLauncher folder:"/>
-		<TextBox Text="{Binding Settings.ATLauncherLoc}"/>
-		<TextBlock Text="Show ATLauncher console while launching instance:"/>
-		<CheckBox IsChecked="{Binding Settings.ShowATLauncherConsole}"/>
-		<TextBlock Text="Automatically close ATLauncher when instance is launched:"/>
-		<CheckBox IsChecked="{Binding Settings.CloseATLOnLaunch}"/>
-	</StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Location of ATLauncher folder:" Grid.Row="0" Grid.Column="0" Margin="10,10,10,5"/>
+            <TextBox Text="{Binding Settings.ATLauncherLoc, UpdateSourceTrigger=PropertyChanged}" x:Name="ATLauncherPathTxt" Grid.Row="0" Grid.Column="1" Margin="0,5,5,5"/>
+            <Button Name="ChooseATLauncherPath" Content="&#xec5b;" Click="ChooseATLauncherBtn" Grid.Row="0" Grid.Column="2" Margin="5,5,10,5" FontFamily="{DynamicResource FontIcoFont}"/>
+        </Grid>
+        <CheckBox Content="Show ATLauncher console while launching instance:" IsChecked="{Binding Settings.ShowATLauncherConsole}" Margin="10,5,0,5"/>
+        <CheckBox Content="Automatically close ATLauncher when instance is launched:" IsChecked="{Binding Settings.CloseATLOnLaunch}" Margin="10,5,0,5"/>
+        <CheckBox Content="Add all Metadata on initial modpack import:" IsChecked="{Binding Settings.AddMetadataOnImport}"  Margin="10,5,0,5"/>
+    </StackPanel>
 </UserControl>

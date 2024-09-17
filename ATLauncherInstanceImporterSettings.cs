@@ -14,11 +14,13 @@ namespace ATLauncherInstanceImporter
         private string aTLauncherLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATLauncher");
         private bool showATLauncherConsole = false;
         private bool closeATLOnLaunch = true;
+        private bool _AddMetadataOnImport = true;
         private int _PluginVersion = 1;
 
         public string ATLauncherLoc { get => aTLauncherLoc; set => SetValue(ref aTLauncherLoc, value); }
         public bool ShowATLauncherConsole { get => showATLauncherConsole; set => SetValue(ref showATLauncherConsole, value); }
         public bool CloseATLOnLaunch { get => closeATLOnLaunch; set => SetValue(ref closeATLOnLaunch, value); }
+        public bool AddMetadataOnImport { get => _AddMetadataOnImport; set => SetValue(ref _AddMetadataOnImport, value); }
 
         //public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
         // Playnite serializes settings object to a JSON object and saves it as text file.
@@ -86,6 +88,7 @@ namespace ATLauncherInstanceImporter
             {
                 logger.Info("ATLauncher Integration settings changed, updating games");
                 plugin.UpdateLaunchArgs();
+                plugin.SetClient();
             }
         }
 

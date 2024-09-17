@@ -57,6 +57,8 @@
     <Compile Include="ATLauncherInstanceImporterSettingsView.xaml.cs">
       <DependentUpon>ATLauncherInstanceImporterSettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ATLauncherMetadataProvider.cs" />
+    <Compile Include="Models\Instance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -75,6 +77,9 @@
     <None Include="icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Resources\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="Localization\*.xaml">
@@ -91,10 +96,13 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\defaultimage.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)postbuild.bat $(ConfigurationName))
-if $(ConfigurationName) == Release (call $(ProjectDir)postbuild.bat $(ConfigurationName) $(TargetDir) $(ProjectDir)Packed\)</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Release (call $(ProjectDir)postbuild.bat $(ConfigurationName) $(TargetDir) $(ProjectDir)Packed\)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>if $(ConfigurationName) == Debug (call $(ProjectDir)prebuild.bat)</PreBuildEvent>
