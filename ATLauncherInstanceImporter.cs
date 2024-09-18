@@ -185,7 +185,7 @@ namespace ATLauncherInstanceImporter
                         Publishers = instance.GetInstancePublishers(),
                         Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
                         Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-                        Platforms = new HashSet<MetadataProperty> { GetOS() },
+                        Platforms = new HashSet<MetadataProperty> { ATLauncherMetadataProvider.GetOS() },
                         Icon = imgs.Item1,
                         CoverImage = imgs.Item2,
                         BackgroundImage = imgs.Item2
