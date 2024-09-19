@@ -199,6 +199,7 @@ namespace ATLauncherInstanceImporter
                         InstallDirectory = dir,
                         IsInstalled = true,
                         GameId = "atl-" + Path.GetFileName(dir).ToLower(),
+                        Source = new MetadataNameProperty("ATLauncher"),
                         GameActions = new List<GameAction>
                         {
                             new GameAction()
