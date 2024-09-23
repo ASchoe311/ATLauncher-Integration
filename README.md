@@ -1,3 +1,6 @@
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/ASchoe311/ATLauncher-Integration/latest/total?label=Latest%20Release%20Downloads)    ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ASchoe311/ATLauncher-Integration/total?label=Lifetime%20Downloads)
+
+
 # [ATLauncher](https://atlauncher.com/) integration plugin for [Playnite](https://playnite.link/)
 
 Enables Playnite to import and launch Minecraft instances made using ATLauncher as if they were individual games. 
