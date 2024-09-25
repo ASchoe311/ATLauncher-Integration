@@ -27,7 +27,7 @@ namespace ATLauncherInstanceImporter
         public bool CloseATLOnLaunch { get => closeATLOnLaunch; set => SetValue(ref closeATLOnLaunch, value); }
         public bool AddMetadataOnImport { get => _AddMetadataOnImport; set => SetValue(ref _AddMetadataOnImport, value); }
         public ObservableCollection<string> InstanceIgnoreList { get; set; } = new ObservableCollection<string>();
-        //public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
+        public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
 
     }
 

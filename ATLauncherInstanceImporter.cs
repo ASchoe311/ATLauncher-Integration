@@ -50,7 +50,7 @@ namespace ATLauncherInstanceImporter
         //private int _PluginVersion = 2;
 
         public override Guid Id { get; } = Guid.Parse("40e56f44-4955-40ec-9bf3-682c4007e55b");
-
+        private int vNum = 2;
         // Change to something more appropriate
         public override string Name => "ATLauncher";
 
@@ -137,18 +137,6 @@ namespace ATLauncherInstanceImporter
                             InstallDirectory = dir,
                             IsInstalled = true,
                             GameId = "atl-" + Path.GetFileName(dir).ToLower(),
-                            GameActions = new List<GameAction>
-                            {
-                                new GameAction()
-                                {
-                                    Type = GameActionType.File,
-                                    Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
-                                    Arguments = GetLaunchString(dir),
-                                    WorkingDir = settings.Settings.ATLauncherLoc,
-                                    TrackingMode = TrackingMode.Default,
-                                    IsPlayAction = true
-                                }
-                            },
                             Description = ATLauncherMetadataProvider.GenerateInstanceDescription(instance),
                             Source = new MetadataNameProperty("ATLauncher"),
                             Developers = instance.GetPackAuthors(),
@@ -171,38 +159,60 @@ namespace ATLauncherInstanceImporter
                             InstallDirectory = dir,
                             IsInstalled = true,
                             GameId = "atl-" + Path.GetFileName(dir).ToLower(),
-                            Source = new MetadataNameProperty("ATLauncher"),
-                            GameActions = new List<GameAction>
-                            {
-                                new GameAction()
-                                {
-                                    Type = GameActionType.File,
-                                    Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
-                                    Arguments = GetLaunchString(dir),
-                                    WorkingDir = settings.Settings.ATLauncherLoc,
-                                    TrackingMode = TrackingMode.Default,
-                                    IsPlayAction = true
-                                }
-                            }
+                            Source = new MetadataNameProperty("ATLauncher")
                         });
                     }
                 }
                 catch (Exception ex)
                 {
                     logger.Error($"An unrecoverable error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
-                    PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An unrecoverable error occurred while importing the ATLauncher instance at {dir}, please add it to the ignore list", NotificationType.Error));
-                    //PlayniteApi.Dialogs.ShowErrorMessage(
-                    //    $"The instance located at\n\n{dir}\n\ncould not be added due to the following error\n\n{ex.Message}.\n\nAnd will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
-                    //    "Instance Import Error");
-                    //Application.Current.Dispatcher.Invoke((Action)delegate
-                    //{
-                    //    settings.Settings.InstanceIgnoreList.Add(dir);
-                    //    SavePluginSettings(settings);
-                    //});
+                    //PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An unrecoverable error occurred while importing the ATLauncher instance at {dir}, please add it to the ignore list", NotificationType.Error));
+                    PlayniteApi.Dialogs.ShowErrorMessage(
+                        $"The instance located at\n\n{dir}\n\nCould not be added due to the following error\n\n{ex.Message}.\n\nIt will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log",
+                        "ATLauncher Instance Import Error");
+                    Application.Current.Dispatcher.Invoke((Action)delegate
+                    {
+                        settings.Settings.InstanceIgnoreList.Add(dir);
+                        SavePluginSettings(settings.Settings);
+                    });
                     continue;
                 }
             }
             return games;
+        }
+
+        public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
+        {
+            base.OnApplicationStarted(args);
+            if (settings.Settings.PluginVersion != vNum)
+            {
+                logger.Info("Detected first run of new plugin version, removing old actions and updating descriptions");
+                PlayniteApi.Database.Games.BeginBufferUpdate();
+                foreach (var game in PlayniteApi.Database.Games)
+                {
+                    if (game.PluginId != Id)
+                    {
+                        continue;
+                    }
+                    List<GameAction> actions = new List<GameAction>();
+                    foreach (var action in game.GameActions)
+                    {
+                        if (action.IsPlayAction)
+                        {
+                            actions.Add(action);
+                        }
+                    }
+                    foreach (var action in actions)
+                    {
+                        game.GameActions.Remove(action);
+                    }
+                    var inst = GetInstance(game.InstallDirectory);
+                    game.Description = ATLauncherMetadataProvider.GenerateInstanceDescription(inst);
+                }
+                PlayniteApi.Database.Games.EndBufferUpdate();
+                settings.Settings.PluginVersion = vNum;
+                SavePluginSettings(settings.Settings);
+            }
         }
 
         public override LibraryMetadataProvider GetMetadataDownloader()
@@ -250,6 +260,22 @@ namespace ATLauncherInstanceImporter
                 $"The path to your launcher installation isn't valid:\n{Launcher.InstancePath}",
                 "ATLauncher Integration Plugin Error"
             );
+        }
+
+        public override IEnumerable<PlayController> GetPlayActions(GetPlayActionsArgs args)
+        {
+            if (args.Game.PluginId != Id)
+            {
+                yield break;
+            }
+            AutomaticPlayController playController = new AutomaticPlayController(args.Game);
+            playController.Name = "Play";
+            playController.Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe");
+            playController.Arguments = GetLaunchString(args.Game.InstallDirectory);
+            playController.WorkingDir = settings.Settings.ATLauncherLoc;
+            playController.TrackingMode = TrackingMode.Default;
+
+            yield return playController;
         }
 
         public class ATLauncherUninstallController : UninstallController
