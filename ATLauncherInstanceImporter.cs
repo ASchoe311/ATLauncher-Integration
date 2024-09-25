@@ -15,6 +15,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Playnite.SDK.Events;
 using System.Reflection;
+using System.Windows;
 
 namespace ATLauncherInstanceImporter
 {
@@ -191,8 +192,11 @@ namespace ATLauncherInstanceImporter
                     PlayniteApi.Dialogs.ShowErrorMessage(
                         $"The instance located at\n\n{dir}\n\ncould not be added due to the following error\n\n{ex.Message}.\n\nAnd will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
                         "Instance Import Error");
-                    settings.Settings.InstanceIgnoreList.Add(dir);
-                    SavePluginSettings(settings);
+                    Application.Current.Dispatcher.Invoke((Action)delegate
+                    {
+                        settings.Settings.InstanceIgnoreList.Add(dir);
+                        SavePluginSettings(settings);
+                    });
                     continue;
                 }
             }
