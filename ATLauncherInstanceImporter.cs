@@ -95,6 +95,7 @@ namespace ATLauncherInstanceImporter
             {
                 return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
             }
+            logger.Warn("Playnite tried to get ATLauncher instances, but ATLauncher location is not set");
             return new List<string>();
 
         }
@@ -103,50 +104,6 @@ namespace ATLauncherInstanceImporter
         {
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
         }
-
-        private MetadataNameProperty GetOS()
-        {
-            int platform = (int)Environment.OSVersion.Platform;
-            if (platform == 4 || platform == 128)
-            {
-                return new MetadataNameProperty("PC (Linux)");
-            }
-            if (platform == 6)
-            {
-                return new MetadataNameProperty("Macintosh");
-            }
-            if (platform == 2)
-            {
-                return new MetadataNameProperty("PC (Windows)");
-            }
-            return new MetadataNameProperty("Other");
-        }
-
-        //public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
-        //{
-        //    base.OnApplicationStarted(args);
-        //    logger.Info("Removing previously listed instances");
-        //    if (settings.Settings.PluginVersion != null)
-        //    {
-        //        logger.Info($"Plugin version in settings is {settings.Settings.PluginVersion}, new version is {_PluginVersion}");
-        //    }
-        //    if (settings.Settings.PluginVersion == null || settings.Settings.PluginVersion < _PluginVersion)
-        //    {
-        //        PlayniteApi.Database.Games.BeginBufferUpdate();
-        //        foreach (var game in PlayniteApi.Database.Games)
-        //        {
-        //            if (game.PluginId != Id)
-        //            {
-        //                continue;
-        //            }
-        //            Instance instance = GetInstanceInfo(game.InstallDirectory, settings.Settings.ATLauncherLoc);
-        //            game.GameId = "atl-" + Path.GetFileName(game.InstallDirectory).ToLower();
-        //            game.Icon = instance.PackIcon.ToString();
-        //            //game.DeveloperIds = instance.Authors;
-        //        }
-        //        PlayniteApi.Database.Games.EndBufferUpdate();
-        //    }
-        //}
 
         public Models.Instance GetInstance(string instanceDir)
         {
@@ -159,65 +116,76 @@ namespace ATLauncherInstanceImporter
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                logger.Info($"Discovered instance folder\"{dir}\", adding to library");
-                Models.Instance instance = GetInstance(dir);
-                Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
-                if (settings.Settings.AddMetadataOnImport)
+                logger.Info($"Discovered instance folder\"{dir}\", trying to add to library");
+                try
                 {
-                    games.Add(new GameMetadata()
+                    Models.Instance instance = GetInstance(dir);
+                    Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
+                    if (settings.Settings.AddMetadataOnImport)
                     {
-                        Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
-                        InstallDirectory = dir,
-                        IsInstalled = true,
-                        GameId = "atl-" + Path.GetFileName(dir).ToLower(),
-                        GameActions = new List<GameAction>
+                        games.Add(new GameMetadata()
                         {
-                            new GameAction()
+                            Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                            InstallDirectory = dir,
+                            IsInstalled = true,
+                            GameId = "atl-" + Path.GetFileName(dir).ToLower(),
+                            GameActions = new List<GameAction>
                             {
-                                Type = GameActionType.File,
-                                Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
-                                Arguments = GetLaunchString(dir),
-                                WorkingDir = settings.Settings.ATLauncherLoc,
-                                TrackingMode = TrackingMode.Default,
-                                IsPlayAction = true
+                                new GameAction()
+                                {
+                                    Type = GameActionType.File,
+                                    Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
+                                    Arguments = GetLaunchString(dir),
+                                    WorkingDir = settings.Settings.ATLauncherLoc,
+                                    TrackingMode = TrackingMode.Default,
+                                    IsPlayAction = true
+                                }
+                            },
+                            Description = ATLauncherMetadataProvider.GenerateInstanceDescription(instance),
+                            Source = new MetadataNameProperty("ATLauncher"),
+                            Developers = instance.GetPackAuthors(),
+                            Links = instance.GetPackLinks(),
+                            ReleaseDate = instance.GetReleaseDate(),
+                            Publishers = instance.GetInstancePublishers(),
+                            Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
+                            Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
+                            Platforms = new HashSet<MetadataProperty> { ATLauncherMetadataProvider.GetOS() },
+                            Icon = imgs.Item1,
+                            CoverImage = imgs.Item2,
+                            BackgroundImage = imgs.Item2
+                        });
+                    }
+                    else
+                    {
+                        games.Add(new GameMetadata()
+                        {
+                            Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                            InstallDirectory = dir,
+                            IsInstalled = true,
+                            GameId = "atl-" + Path.GetFileName(dir).ToLower(),
+                            Source = new MetadataNameProperty("ATLauncher"),
+                            GameActions = new List<GameAction>
+                            {
+                                new GameAction()
+                                {
+                                    Type = GameActionType.File,
+                                    Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
+                                    Arguments = GetLaunchString(dir),
+                                    WorkingDir = settings.Settings.ATLauncherLoc,
+                                    TrackingMode = TrackingMode.Default,
+                                    IsPlayAction = true
+                                }
                             }
-                        },
-                        Description = ATLauncherMetadataProvider.GenerateInstanceDescription(instance),
-                        Source = new MetadataNameProperty("ATLauncher"),
-                        Developers = instance.GetPackAuthors(),
-                        Links = instance.GetPackLinks(),
-                        ReleaseDate = instance.GetReleaseDate(),
-                        Publishers = instance.GetInstancePublishers(),
-                        Features = new HashSet<MetadataProperty> { new MetadataNameProperty("Single Player"), new MetadataNameProperty("Multiplayer") },
-                        Genres = new HashSet<MetadataProperty> { new MetadataNameProperty("Sandbox"), new MetadataNameProperty("Survival") },
-                        Platforms = new HashSet<MetadataProperty> { ATLauncherMetadataProvider.GetOS() },
-                        Icon = imgs.Item1,
-                        CoverImage = imgs.Item2,
-                        BackgroundImage = imgs.Item2
-                    });
+                        });
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    games.Add(new GameMetadata()
-                    {
-                        Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
-                        InstallDirectory = dir,
-                        IsInstalled = true,
-                        GameId = "atl-" + Path.GetFileName(dir).ToLower(),
-                        Source = new MetadataNameProperty("ATLauncher"),
-                        GameActions = new List<GameAction>
-                        {
-                            new GameAction()
-                            {
-                                Type = GameActionType.File,
-                                Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe"),
-                                Arguments = GetLaunchString(dir),
-                                WorkingDir = settings.Settings.ATLauncherLoc,
-                                TrackingMode = TrackingMode.Default,
-                                IsPlayAction = true
-                            }
-                        }
-                    });
+                    logger.Error($"An error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
+                    PlayniteApi.Dialogs.ShowErrorMessage(
+                        $"Instance located at\n\n{dir}\n\ncould not be added due to the following error:\n\n{ex.Message}.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
+                        "Instance Import Error");
+                    continue;
                 }
             }
             return games;
