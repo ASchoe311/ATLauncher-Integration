@@ -11,6 +11,11 @@ namespace ATLauncherInstanceImporter.Tests
     public class TestJsonRead
     {
 
+        private string JSONText(string folder)
+        {
+            return File.ReadAllText(Path.Combine(@".\jsons", folder, "instance.json"));
+        }
+
         [Theory]
         [InlineData(@"atm9")]
         [InlineData(@"cobblemon")]
@@ -18,29 +23,30 @@ namespace ATLauncherInstanceImporter.Tests
         [InlineData(@"mechmagic")]
         [InlineData(@"vanilla")]
         [InlineData(@"cottagewitch")]
-        [Trait("Instance", "atm9")]
         public void TestValidJSONS(string jsonPath)
         {
-            string fullPath = Path.Combine(@"C:\Users\adamr\Documents\Coding\Playnite\ATLInt\ATLauncherInstanceImporter\ATLauncherInstanceImporter.Tests\jsons\", jsonPath);
-            var instance = ATLauncherInstanceImporter.GetInstanceInfo(fullPath, @"C:\Users\adamr\AppData\Roaming\ATLauncher");
-            Assert.False(string.IsNullOrEmpty(instance.Name));
-            Assert.False(string.IsNullOrEmpty(instance.MCVer));
-            if (instance.Vanilla)
+            var instance = Models.Instance.FromJson(JSONText(jsonPath));
+            Assert.NotNull(instance);
+            Assert.NotNull(instance.Launcher);
+            Assert.False(string.IsNullOrEmpty(instance.Launcher.Name));
+            Assert.False(string.IsNullOrEmpty(instance.McVersion));
+            if (instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value)
             {
-                Assert.True(instance.ModList.Count == 0);
+                Assert.True(instance.Launcher.Mods.Count == 0);
             }
             else
             {
-                Assert.False(instance.ModList.Count == 0);
+                Assert.False(instance.Launcher.Mods.Count == 0);
             }
-            Assert.False(string.IsNullOrEmpty(instance.MCVer));
-            Assert.False(string.IsNullOrEmpty(instance.ReleaseDate.ToString()));
+            Assert.False(string.IsNullOrEmpty(instance.GetReleaseDate().ToString()));
+            Assert.NotEmpty(instance.GetInstancePublishers());
+            Assert.Not
         }
 
         [Fact]
         public void TestEmptyJSON()
         {
-            var instance = ATLauncherInstanceImporter.GetInstanceInfo(@"C:\Users\adamr\Documents\Coding\Playnite\ATLInt\ATLauncherInstanceImporter\ATLauncherInstanceImporter.Tests\jsons\empty", @"C:\Users\adamr\AppData\Roaming\ATLauncher");
+            var instance = Models.Instance.FromJson(JSONText("empty"));
             Assert.Null(instance);
         }
 
@@ -53,9 +59,8 @@ namespace ATLauncherInstanceImporter.Tests
         [InlineData(@"baddatetechnic")]
         public void TestBaddates(string jsonPath)
         {
-            string fullPath = Path.Combine(@"C:\Users\adamr\Documents\Coding\Playnite\ATLInt\ATLauncherInstanceImporter\ATLauncherInstanceImporter.Tests\jsons\", jsonPath);
-            var instance = ATLauncherInstanceImporter.GetInstanceInfo(fullPath, @"C:\Users\adamr\AppData\Roaming\ATLauncher");
-            Assert.False(string.IsNullOrEmpty(instance.ReleaseDate.ToString()));
+            var instance = Models.Instance.FromJson(JSONText(jsonPath));
+            Assert.True(string.IsNullOrEmpty(instance.GetReleaseDate().ToString()));
         }
     }
 }
