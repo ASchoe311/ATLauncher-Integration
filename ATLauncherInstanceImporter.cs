@@ -91,7 +91,11 @@ namespace ATLauncherInstanceImporter
 
         private List<string> GetInstanceDirs()
         {
-            return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
+            if (Client.IsInstalled)
+            {
+                return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
+            }
+            return new List<string>();
 
         }
 
