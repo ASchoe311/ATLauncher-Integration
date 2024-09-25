@@ -17,7 +17,7 @@ namespace ATLauncherInstanceImporter
         public override string Icon => Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png");
 
         public override bool IsInstalled => (!string.IsNullOrEmpty(_ATLauncherClient.Launcher.ExePath)
-            && File.Exists(Path.Combine(_ATLauncherClient.Launcher.ExePath, "ATLauncher.exe")));
+            && File.Exists(_ATLauncherClient.Launcher.ExePath));
         
 
 

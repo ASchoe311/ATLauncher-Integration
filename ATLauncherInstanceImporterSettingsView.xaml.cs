@@ -33,7 +33,7 @@ namespace ATLauncherInstanceImporter
             {
                 ATLauncherPathTxt.Text = folder;
             }
-            else
+            else if (folder != string.Empty)
             {
                 playniteAPI.Dialogs.ShowMessage("ATLauncher.exe not found at selected folder, setting will not be changed.");
             }
