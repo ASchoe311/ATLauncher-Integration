@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.Win32;
 
 namespace ATLauncherInstanceImporter
 {
@@ -14,7 +15,9 @@ namespace ATLauncherInstanceImporter
         private static readonly ILogger logger = LogManager.GetLogger();
         private readonly ATLauncherInstanceImporter _ATLauncherClient;
         public override string Icon => Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png");
-        public override bool IsInstalled => true;
+
+        public override bool IsInstalled => string.IsNullOrEmpty(_ATLauncherClient.Launcher.ExePath) ? false : true;
+        
 
 
         public ATLauncherInstanceImporterClient(ATLauncherInstanceImporter ATLint)

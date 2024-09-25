@@ -69,6 +69,7 @@ namespace ATLauncherInstanceImporter
             };
             Client =  new ATLauncherInstanceImporterClient(this);
         }
+
         public void SetClient()
         {
             Launcher = new ATLauncher(settings.Settings.ATLauncherLoc);

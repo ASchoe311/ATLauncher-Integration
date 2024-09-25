@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using Microsoft.Win32;
 
 namespace ATLauncherInstanceImporter
 {
@@ -14,25 +13,8 @@ namespace ATLauncherInstanceImporter
     {
 
         private static readonly ILogger logger = LogManager.GetLogger();
-        private static string DefaultLoc()
-        {
-            foreach (var user in Registry.Users.GetSubKeyNames())
-            {
-                //Console.WriteLine(user);
-                var subkey = Registry.Users.OpenSubKey(user + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall\{2F5FDA11-45A5-4CC3-8E51-5E11E2481697}_is1");
-                if (subkey != null)
-                {
-                    if (subkey.GetValue("InstallLocation") != null)
-                    {
-                        logger.Debug("Got ATLauncher location from registry");
-                        return subkey.GetValue("InstallLocation").ToString();
-                    }
-                }
-            }
-            logger.Debug("Couldn't get ATLauncher location from registry, setting to default value");
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATLauncher");
-        }
-        private string aTLauncherLoc = File.Exists(DefaultLoc()) ? DefaultLoc() : string.Empty;
+        
+        private string aTLauncherLoc = string.Empty;
         private bool showATLauncherConsole = false;
         private bool closeATLOnLaunch = true;
         private bool _AddMetadataOnImport = true;
