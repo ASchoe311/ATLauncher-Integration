@@ -34,10 +34,10 @@
             <DataGrid Name="GridIgnoreList" ItemsSource="{Binding Settings.InstanceIgnoreList}" DockPanel.Dock="Top"
               CanUserAddRows="False" CanUserResizeRows="False" AutoGenerateColumns="False" GridLinesVisibility="None" SelectionMode="Single">
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Instance Folder Path" Width="*">
+                    <DataGridTemplateColumn Header="Instance Folder Path" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Path=., UpdateSourceTrigger=PropertyChanged}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

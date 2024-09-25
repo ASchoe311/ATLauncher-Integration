@@ -40,7 +40,6 @@ namespace ATLauncherInstanceImporter.Tests
             }
             Assert.False(string.IsNullOrEmpty(instance.GetReleaseDate().ToString()));
             Assert.NotEmpty(instance.GetInstancePublishers());
-            Assert.Not
         }
 
         [Fact]

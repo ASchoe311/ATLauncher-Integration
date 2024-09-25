@@ -93,14 +93,8 @@ namespace ATLauncherInstanceImporter
         {
             if (Client.IsInstalled)
             {
-                List<string> ignores = new List<string>();
                 List<string> dirs = new List<string>();
-                foreach (var p in settings.Settings.InstanceIgnoreList)
-                {
-                    ignores.Add(p.Path);
-                }
-
-                foreach (var dir in Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "instances")).AsQueryable().Except(ignores.AsQueryable()))
+                foreach (var dir in Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "instances")).Except(settings.Settings.InstanceIgnoreList))
                 {
                     dirs.Add(dir);
                 }
@@ -195,11 +189,10 @@ namespace ATLauncherInstanceImporter
                 {
                     logger.Error($"An error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
                     PlayniteApi.Dialogs.ShowErrorMessage(
-                        $"The instance located at\n\n{dir}\n\ncould not be added due to the following error:\n\n{ex.Message}.\n\nIt will be automatically added to the ignore list in settings.\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
+                        $"The instance located at\n\n{dir}\n\ncould not be added due to the following error\n\n{ex.Message}.\n\nAnd will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
                         "Instance Import Error");
-                    InstanceFolder f = new InstanceFolder();
-                    f.Path = dir;
-                    settings.Settings.InstanceIgnoreList.Add(f);
+                    settings.Settings.InstanceIgnoreList.Add(dir);
+                    SavePluginSettings(settings);
                     continue;
                 }
             }

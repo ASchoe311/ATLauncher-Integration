@@ -11,12 +11,6 @@ using System.Collections.ObjectModel;
 
 namespace ATLauncherInstanceImporter
 {
-
-    public class InstanceFolder
-    {
-        public string Path { get; set; }
-    }
-
     public class ATLauncherInstanceImporterSettings : ObservableObject
     {
 
@@ -32,9 +26,9 @@ namespace ATLauncherInstanceImporter
         public bool ShowATLauncherConsole { get => showATLauncherConsole; set => SetValue(ref showATLauncherConsole, value); }
         public bool CloseATLOnLaunch { get => closeATLOnLaunch; set => SetValue(ref closeATLOnLaunch, value); }
         public bool AddMetadataOnImport { get => _AddMetadataOnImport; set => SetValue(ref _AddMetadataOnImport, value); }
-        public ObservableCollection<InstanceFolder> InstanceIgnoreList { get; set; } = new ObservableCollection<InstanceFolder>();
+        public ObservableCollection<string> InstanceIgnoreList { get; set; } = new ObservableCollection<string>();
         //public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
-        
+
     }
 
     public class ATLauncherInstanceImporterSettingsViewModel : ObservableObject, ISettings
@@ -62,16 +56,14 @@ namespace ATLauncherInstanceImporter
                 var folder = Playnite.SDK.API.Instance.Dialogs.SelectFolder();
                 if (!string.IsNullOrEmpty(folder))
                 {
-                    InstanceFolder f = new InstanceFolder();
-                    f.Path = folder;
-                    Settings.InstanceIgnoreList.Add(f);
+                    Settings.InstanceIgnoreList.Add(folder);
                 }
             });
         }
 
-        public RelayCommand<InstanceFolder> RemoveIgnoreCommand
+        public RelayCommand<string> RemoveIgnoreCommand
         {
-            get => new RelayCommand<InstanceFolder>((a) =>
+            get => new RelayCommand<string>((a) =>
             {
                 if (a != null)
                 {
