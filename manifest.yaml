@@ -1,5 +1,17 @@
 ﻿AddonId: ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b
 Packages:
+  - Version: 2.2.0
+    RequiredApiVersion: 6.2.0
+    ReleaseDate: 2024-09-25
+    PackageUrl: https://github.com/ASchoe311/ATLauncher-Integration/releases/download/v2.2.0/ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b_2_2_0.pext
+    Changelog:
+    - Changed over from pre-formed game actions to library integration play actions
+    - Fixed issues with settings improperly saving/loading
+    - Added better cover and background for vanilla instances
+    - Added option to automatically add instances to the ignore list when scanning them causes errors
+    - Fixed error about supported change to collection view
+    - Added code to automatically remove old play actions on first plugin load
+    - Slight improvements to instance descriptions
   - Version: 2.1.0
     RequiredApiVersion: 6.2.0
     ReleaseDate: 2024-09-24
