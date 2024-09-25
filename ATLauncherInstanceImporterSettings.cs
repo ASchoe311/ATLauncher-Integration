@@ -7,9 +7,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 
 namespace ATLauncherInstanceImporter
 {
+
+    public class InstanceFolder
+    {
+        public string Path { get; set; }
+    }
+
     public class ATLauncherInstanceImporterSettings : ObservableObject
     {
 
@@ -25,12 +32,9 @@ namespace ATLauncherInstanceImporter
         public bool ShowATLauncherConsole { get => showATLauncherConsole; set => SetValue(ref showATLauncherConsole, value); }
         public bool CloseATLOnLaunch { get => closeATLOnLaunch; set => SetValue(ref closeATLOnLaunch, value); }
         public bool AddMetadataOnImport { get => _AddMetadataOnImport; set => SetValue(ref _AddMetadataOnImport, value); }
-
+        public ObservableCollection<InstanceFolder> InstanceIgnoreList { get; set; } = new ObservableCollection<InstanceFolder>();
         //public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
-        // Playnite serializes settings object to a JSON object and saves it as text file.
-        // If you want to exclude some property from being saved then use `JsonDontSerialize` ignore attribute.
-        //[DontSerialize]
-        //public bool OptionThatWontBeSaved { get => optionThatWontBeSaved; set => SetValue(ref optionThatWontBeSaved, value); }
+        
     }
 
     public class ATLauncherInstanceImporterSettingsViewModel : ObservableObject, ISettings
@@ -50,6 +54,31 @@ namespace ATLauncherInstanceImporter
         }
 
         private ILogger logger = LogManager.GetLogger();
+
+        public RelayCommand AddIgnoreCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                var folder = Playnite.SDK.API.Instance.Dialogs.SelectFolder();
+                if (!string.IsNullOrEmpty(folder))
+                {
+                    InstanceFolder f = new InstanceFolder();
+                    f.Path = folder;
+                    Settings.InstanceIgnoreList.Add(f);
+                }
+            });
+        }
+
+        public RelayCommand<InstanceFolder> RemoveIgnoreCommand
+        {
+            get => new RelayCommand<InstanceFolder>((a) =>
+            {
+                if (a != null)
+                {
+                    Settings.InstanceIgnoreList.Remove(a);
+                }
+            });
+        }
 
         public ATLauncherInstanceImporterSettingsViewModel(ATLauncherInstanceImporter plugin)
         {

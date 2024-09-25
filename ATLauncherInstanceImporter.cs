@@ -93,7 +93,19 @@ namespace ATLauncherInstanceImporter
         {
             if (Client.IsInstalled)
             {
-                return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
+                List<string> ignores = new List<string>();
+                List<string> dirs = new List<string>();
+                foreach (var p in settings.Settings.InstanceIgnoreList)
+                {
+                    ignores.Add(p.Path);
+                }
+
+                foreach (var dir in Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "instances")).AsQueryable().Except(ignores.AsQueryable()))
+                {
+                    dirs.Add(dir);
+                }
+                return dirs;
+                //return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
             }
             logger.Warn("Playnite tried to get ATLauncher instances, but ATLauncher location is not set");
             return new List<string>();
@@ -183,8 +195,11 @@ namespace ATLauncherInstanceImporter
                 {
                     logger.Error($"An error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
                     PlayniteApi.Dialogs.ShowErrorMessage(
-                        $"Instance located at\n\n{dir}\n\ncould not be added due to the following error:\n\n{ex.Message}.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
+                        $"The instance located at\n\n{dir}\n\ncould not be added due to the following error:\n\n{ex.Message}.\n\nIt will be automatically added to the ignore list in settings.\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
                         "Instance Import Error");
+                    InstanceFolder f = new InstanceFolder();
+                    f.Path = dir;
+                    settings.Settings.InstanceIgnoreList.Add(f);
                     continue;
                 }
             }
