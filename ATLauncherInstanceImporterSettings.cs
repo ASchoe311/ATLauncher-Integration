@@ -126,10 +126,13 @@ namespace ATLauncherInstanceImporter
             // Code executed when user decides to confirm changes made since BeginEdit was called.
             // This method should save settings made to Option1 and Option2.
             plugin.SavePluginSettings(Settings);
-            if (Settings != editingClone)
+            if (Settings.CloseATLOnLaunch != editingClone.CloseATLOnLaunch || Settings.ShowATLauncherConsole != editingClone.ShowATLauncherConsole)
             {
-                logger.Info("ATLauncher Integration settings changed, updating games");
+                logger.Info("ATLauncher Integration launch options changed, updating games");
                 plugin.UpdateLaunchArgs();
+            }
+            if (Settings.ATLauncherLoc != editingClone.ATLauncherLoc)
+            {
                 plugin.SetClient();
             }
         }
