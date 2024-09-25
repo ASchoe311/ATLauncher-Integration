@@ -1,15 +1,5 @@
 ﻿AddonId: ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b
 Packages:
-  - Version: 2.0.2
-    RequiredApiVersion: 6.2.0
-    ReleaseDate: 2024-09-24
-    PackageUrl: https://github.com/ASchoe311/ATLauncher-Integration/releases/download/v2.0.2/ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b_2_0_2.pext
-    Changelog:
-      - Fixed auto-detection for installed versions of ATLauncher
-      - Plugin now properly reports to Playnite if ATLauncher client can be opened
-      - Plugin no longer tries to search for instances when ATLauncher location is not set
-      - Message about selected folder not containing ATLauncher is no longer shown when folder selection is cancelled
-  - Version: 2.0
   - Version: 2.0.1
     RequiredApiVersion: 6.2.0
     ReleaseDate: 2024-09-19
