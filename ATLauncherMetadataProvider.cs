@@ -49,18 +49,25 @@ namespace ATLauncherInstanceImporter
         {
             //logger.Info($"Generating description for instance {instance.Launcher.Name}");
             string description = string.Empty;
+            
             if (instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value)
             {
-                description += $"<h1>Vanilla Minecraft {instance.McVersion}</h1>";
-                return description;
+                if ((instance.Launcher.LoaderVersion == null || instance.Launcher.LoaderVersion.Type == null) && instance.Launcher.Mods.Count == 0)
+                {
+                    return $"<h1>Vanilla Minecraft {instance.McVersion}</h1>";
+                }
             }
             if (instance.Launcher.Description != null)
             {
                 description = $"<h2>{instance.Launcher.Description}</h2>";
             }
             description += $"<h1>Minecraft Version: {instance.McVersion}</h1>";
+            description += $"<h1>Mod Loader: {instance.Launcher.LoaderVersion.Type}</h1>";
             description += $"<h1>Contains {instance.Launcher.Mods.Count} mods</h1>";
-            description += "<h1>Mod List</h1><hr>";
+            if (instance.Launcher.Mods.Count != 0) 
+            {
+                description += "<h1>Mod List</h1><hr>";
+            }
             foreach (var mod in instance.Launcher.Mods)
             {
                 description += "<p><h2>";
@@ -78,7 +85,7 @@ namespace ATLauncherInstanceImporter
                 }
                 description += "</h2>";
                 var modAuths = Models.Instance.GetModAuthors(mod);
-                string authString = modAuths.Count == 0 ? "No authors listed" : "By";
+                string authString = "By";
                 //logger.Debug($"{mod.Authors.Count()}");
                 for (int i = 0; i < modAuths.Count(); i++)
                 {
@@ -86,14 +93,17 @@ namespace ATLauncherInstanceImporter
                     {
                         authString += " and";
                     }
-                    authString += " " + modAuths[i];
+                    authString += " " + $"<i>{modAuths[i]}</i>";
                     if (modAuths.Count() > 2 && i != modAuths.Count() - 1)
                     {
                         authString += $",";
                     }
 
                 }
-                description += $"<i>{authString}</i>";
+                if (modAuths.Count != 0)
+                {
+                    description += $"{authString}";
+                }
                 description += $"<h3>{mod.Description}</h3></p><br>";
             }
             return description;

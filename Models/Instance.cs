@@ -302,6 +302,9 @@
         [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
         public string Description { get; set; }
 
+        [JsonProperty("loaderVersion", NullValueHandling = NullValueHandling.Ignore)]
+        public LoaderVersion LoaderVersion { get; set; }
+
         [JsonProperty("curseForgeProject", NullValueHandling = NullValueHandling.Ignore)]
         public CurseForgeProject CurseForgeProject { get; set; }
 
@@ -316,6 +319,12 @@
 
         [JsonProperty("vanillaInstance", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IsVanilla { get; set; }
+    }
+
+    public partial class LoaderVersion
+    {
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+        public string Type { get; set; }
     }
 
     public partial class CurseForgeProject

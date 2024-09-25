@@ -189,8 +189,8 @@ namespace ATLauncherInstanceImporter
                 }
                 catch (Exception ex)
                 {
-                    logger.Error($"An error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
-                    PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An error occurred while importing the ATLauncher instance at {dir}, please add it to the ignore list", NotificationType.Error));
+                    logger.Error($"An unrecoverable error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
+                    PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An unrecoverable error occurred while importing the ATLauncher instance at {dir}, please add it to the ignore list", NotificationType.Error));
                     //PlayniteApi.Dialogs.ShowErrorMessage(
                     //    $"The instance located at\n\n{dir}\n\ncould not be added due to the following error\n\n{ex.Message}.\n\nAnd will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
                     //    "Instance Import Error");
