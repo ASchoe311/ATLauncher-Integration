@@ -22,9 +22,9 @@
             <TextBox Text="{Binding Settings.ATLauncherLoc, UpdateSourceTrigger=PropertyChanged}" x:Name="ATLauncherPathTxt" Grid.Row="0" Grid.Column="1" Margin="0,5,5,5"/>
             <Button Name="ChooseATLauncherPath" Content="&#xec5b;" Click="ChooseATLauncherBtn" Grid.Row="0" Grid.Column="2" Margin="5,5,10,5" FontFamily="{DynamicResource FontIcoFont}"/>
         </Grid>
-        <CheckBox Content="Show ATLauncher console while launching instance:" IsChecked="{Binding Settings.ShowATLauncherConsole}" Margin="10,5,0,5"/>
-        <CheckBox Content="Automatically close ATLauncher when instance is launched:" IsChecked="{Binding Settings.CloseATLOnLaunch}" Margin="10,5,0,5"/>
-        <CheckBox Content="Add all Metadata on initial modpack import:" IsChecked="{Binding Settings.AddMetadataOnImport}"  Margin="10,5,0,5"/>
+        <CheckBox Content="Show ATLauncher console while launching instance" IsChecked="{Binding Settings.ShowATLauncherConsole}" Margin="10,5,0,5"/>
+        <CheckBox Content="Automatically close ATLauncher when instance is launched" IsChecked="{Binding Settings.CloseATLOnLaunch}" Margin="10,5,0,5"/>
+        <CheckBox Content="Add all Metadata on initial modpack import" IsChecked="{Binding Settings.AddMetadataOnImport}"  Margin="10,5,0,5"/>
         <DockPanel Margin="10">
             <TextBlock DockPanel.Dock="Top" Text="Specify instance folders to ignore" TextWrapping="Wrap" Margin="0,0,0,5"/>
             <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
