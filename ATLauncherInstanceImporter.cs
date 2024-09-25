@@ -190,7 +190,6 @@ namespace ATLauncherInstanceImporter
 
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
         {
-            base.OnApplicationStarted(args);
             if (settings.Settings.PluginVersion != vNum)
             {
                 logger.Info("Detected first run of new plugin version, removing old actions and updating descriptions");
@@ -202,6 +201,10 @@ namespace ATLauncherInstanceImporter
                         continue;
                     }
                     List<GameAction> actions = new List<GameAction>();
+                    if (game.GameActions == null)
+                    {
+                        continue;
+                    }
                     foreach (var action in game.GameActions)
                     {
                         if (action.IsPlayAction)
@@ -219,7 +222,9 @@ namespace ATLauncherInstanceImporter
                 PlayniteApi.Database.Games.EndBufferUpdate();
                 settings.Settings.PluginVersion = vNum;
                 SavePluginSettings(settings.Settings);
+                
             }
+            base.OnApplicationStarted(args);
         }
 
         public override LibraryMetadataProvider GetMetadataDownloader()
