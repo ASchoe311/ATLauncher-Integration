@@ -49,6 +49,7 @@ namespace ATLauncherInstanceImporter
 
         private ILogger logger = LogManager.GetLogger();
 
+        [DontSerialize]
         public RelayCommand AddIgnoreCommand
         {
             get => new RelayCommand(() =>
@@ -61,6 +62,7 @@ namespace ATLauncherInstanceImporter
             });
         }
 
+        [DontSerialize]
         public RelayCommand<string> RemoveIgnoreCommand
         {
             get => new RelayCommand<string>((a) =>
@@ -70,6 +72,25 @@ namespace ATLauncherInstanceImporter
                     Settings.InstanceIgnoreList.Remove(a);
                 }
             });
+        }
+
+        private string TryGetATLauncherPath()
+        {
+            foreach (var user in Registry.Users.GetSubKeyNames())
+            {
+                //Console.WriteLine(user);
+                var subkey = Registry.Users.OpenSubKey(user + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall\{2F5FDA11-45A5-4CC3-8E51-5E11E2481697}_is1");
+                if (subkey != null)
+                {
+                    if (subkey.GetValue("InstallLocation") != null)
+                    {
+                        logger.Debug("Got ATLauncher location from registry");
+                        return subkey.GetValue("InstallLocation").ToString();
+                    }
+                }
+            }
+            logger.Debug("Couldn't get ATLauncher location from registry, leaving blank");
+            return string.Empty;
         }
 
         public ATLauncherInstanceImporterSettingsViewModel(ATLauncherInstanceImporter plugin)
@@ -88,22 +109,8 @@ namespace ATLauncherInstanceImporter
             else
             {
                 Settings = new ATLauncherInstanceImporterSettings();
-                foreach (var user in Registry.Users.GetSubKeyNames())
-                {
-                    //Console.WriteLine(user);
-                    var subkey = Registry.Users.OpenSubKey(user + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall\{2F5FDA11-45A5-4CC3-8E51-5E11E2481697}_is1");
-                    if (subkey != null)
-                    {
-                        if (subkey.GetValue("InstallLocation") != null)
-                        {
-                            logger.Debug("Got ATLauncher location from registry");
-                            Settings.ATLauncherLoc = subkey.GetValue("InstallLocation").ToString();
-                            plugin.SavePluginSettings(Settings);
-                            break;
-                        }
-                    }
-                }
-                logger.Debug("Couldn't get ATLauncher location from registry, leaving blank");
+                Settings.ATLauncherLoc = TryGetATLauncherPath();
+                plugin.SavePluginSettings(Settings);
             }
 
         }

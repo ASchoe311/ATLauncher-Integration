@@ -102,6 +102,7 @@ namespace ATLauncherInstanceImporter
                 return dirs;
                 //return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
             }
+            PlayniteApi.Notifications.Add(new NotificationMessage(Guid.NewGuid().ToString(), "ATLauncher installation not found, please check addon settings", NotificationType.Error));
             logger.Warn("Playnite tried to get ATLauncher instances, but ATLauncher location is not set");
             return new List<string>();
 
@@ -189,14 +190,15 @@ namespace ATLauncherInstanceImporter
                 catch (Exception ex)
                 {
                     logger.Error($"An error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
-                    PlayniteApi.Dialogs.ShowErrorMessage(
-                        $"The instance located at\n\n{dir}\n\ncould not be added due to the following error\n\n{ex.Message}.\n\nAnd will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
-                        "Instance Import Error");
-                    Application.Current.Dispatcher.Invoke((Action)delegate
-                    {
-                        settings.Settings.InstanceIgnoreList.Add(dir);
-                        SavePluginSettings(settings);
-                    });
+                    PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An error occurred while importing the ATLauncher instance at {dir}, skipping", NotificationType.Error));
+                    //PlayniteApi.Dialogs.ShowErrorMessage(
+                    //    $"The instance located at\n\n{dir}\n\ncould not be added due to the following error\n\n{ex.Message}.\n\nAnd will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log", 
+                    //    "Instance Import Error");
+                    //Application.Current.Dispatcher.Invoke((Action)delegate
+                    //{
+                    //    settings.Settings.InstanceIgnoreList.Add(dir);
+                    //    SavePluginSettings(settings);
+                    //});
                     continue;
                 }
             }
