@@ -62,7 +62,10 @@ namespace ATLauncherInstanceImporter
                 description = $"<h2>{instance.Launcher.Description}</h2>";
             }
             description += $"<h1>Minecraft Version: {instance.McVersion}</h1>";
-            description += $"<h1>Mod Loader: {instance.Launcher.LoaderVersion.Type}</h1>";
+            if (instance.Launcher.LoaderVersion != null && instance.Launcher.LoaderVersion.Type != null)
+            {
+                description += $"<h1>Mod Loader: {instance.Launcher.LoaderVersion.Type}</h1>";
+            }
             description += $"<h1>Contains {instance.Launcher.Mods.Count} mods</h1>";
             if (instance.Launcher.Mods.Count != 0) 
             {
