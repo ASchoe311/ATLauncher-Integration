@@ -50,7 +50,7 @@
             {
                 return SourceEnum.Technic;
             }
-            return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
+            return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value && Launcher.LoaderVersion == null) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
         }
 
         public HashSet<MetadataProperty> GetInstancePublishers()
@@ -207,10 +207,11 @@
             return links;
         }
 
-        public static Tuple<MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir)
+        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir)
         {
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
             var cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png"));
+            var background = cover;
             switch (instance.PackSource())
             {
                 case SourceEnum.CurseForge:
@@ -221,6 +222,7 @@
                     if (instance.Launcher.CurseForgeProject.Logo.Url != null && instance.Launcher.CurseForgeProject.Logo.Url != string.Empty)
                     {
                         cover = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
+                        background = cover;
                     }
                     break;
                 case SourceEnum.Modrinth:
@@ -231,6 +233,7 @@
                     if (File.Exists(Path.Combine(instanceDir, "instance.png")))
                     {
                         cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+                        background = cover;
                     }
                     break;
                 case SourceEnum.Technic:
@@ -241,6 +244,7 @@
                     if (instance.Launcher.TechnicModpack.Logo.Url != null && instance.Launcher.TechnicModpack.Logo.Url != string.Empty)
                     {
                         cover = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
+                        background = cover;
                     }
                     break;
                 case SourceEnum.ATLauncher:
@@ -252,6 +256,7 @@
                         WebClient webClient = new WebClient();
                         var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
                         cover = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                        background = cover;
                     }
                     catch (Exception e)
                     {
@@ -260,9 +265,11 @@
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
+                    cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"));
+                    background = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"));
                     break;
             }
-            return Tuple.Create(icon, cover);
+            return Tuple.Create(icon, cover, background);
         }
 
         public ReleaseDate? GetReleaseDate()

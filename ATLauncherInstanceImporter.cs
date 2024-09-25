@@ -128,7 +128,7 @@ namespace ATLauncherInstanceImporter
                 try
                 {
                     Models.Instance instance = GetInstance(dir);
-                    Tuple<MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
+                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
                     if (settings.Settings.AddMetadataOnImport)
                     {
                         games.Add(new GameMetadata()
@@ -160,7 +160,7 @@ namespace ATLauncherInstanceImporter
                             Platforms = new HashSet<MetadataProperty> { ATLauncherMetadataProvider.GetOS() },
                             Icon = imgs.Item1,
                             CoverImage = imgs.Item2,
-                            BackgroundImage = imgs.Item2
+                            BackgroundImage = imgs.Item3
                         });
                     }
                     else
