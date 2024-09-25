@@ -167,14 +167,21 @@ namespace ATLauncherInstanceImporter
                 {
                     logger.Error($"An unrecoverable error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
                     //PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An unrecoverable error occurred while importing the ATLauncher instance at {dir}, please add it to the ignore list", NotificationType.Error));
-                    PlayniteApi.Dialogs.ShowErrorMessage(
-                        $"The instance located at\n\n{dir}\n\nCould not be added due to the following error\n\n{ex.Message}.\n\nIt will be automatically added to the ignore list in settings.\n\nPlease report this as an issue on github with the accompanying stack trace found in extensions.log",
-                        "ATLauncher Instance Import Error");
-                    Application.Current.Dispatcher.Invoke((Action)delegate
+                    string errMsg = $"The instance located at\n\n{dir}\n\nCould not be added due to the following error\n\n{ex.Message}.\n\n";
+                    if (settings.Settings.AutoIgnoreInstances)
                     {
-                        settings.Settings.InstanceIgnoreList.Add(dir);
-                        SavePluginSettings(settings.Settings);
-                    });
+                        errMsg += "It will be automatically added to the ignore list in settings.\n\n";
+                    }
+                    errMsg += "Please report this as an issue on github with the accompanying stack trace found in extensions.log";
+                    PlayniteApi.Dialogs.ShowErrorMessage(errMsg, "ATLauncher Instance Import Error");
+                    if (settings.Settings.AutoIgnoreInstances)
+                    {
+                        Application.Current.Dispatcher.Invoke((Action)delegate
+                        {
+                            settings.Settings.InstanceIgnoreList.Add(dir);
+                            SavePluginSettings(settings.Settings);
+                        });
+                    }
                     continue;
                 }
             }
