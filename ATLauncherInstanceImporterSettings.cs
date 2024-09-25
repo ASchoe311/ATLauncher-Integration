@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.Win32;
 
 namespace ATLauncherInstanceImporter
 {
@@ -66,6 +67,22 @@ namespace ATLauncherInstanceImporter
             else
             {
                 Settings = new ATLauncherInstanceImporterSettings();
+                foreach (var user in Registry.Users.GetSubKeyNames())
+                {
+                    //Console.WriteLine(user);
+                    var subkey = Registry.Users.OpenSubKey(user + @"\Software\Microsoft\Windows\CurrentVersion\Uninstall\{2F5FDA11-45A5-4CC3-8E51-5E11E2481697}_is1");
+                    if (subkey != null)
+                    {
+                        if (subkey.GetValue("InstallLocation") != null)
+                        {
+                            logger.Debug("Got ATLauncher location from registry");
+                            Settings.ATLauncherLoc = subkey.GetValue("InstallLocation").ToString();
+                            plugin.SavePluginSettings(Settings);
+                            break;
+                        }
+                    }
+                }
+                logger.Debug("Couldn't get ATLauncher location from registry, leaving blank");
             }
 
         }
