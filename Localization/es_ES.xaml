@@ -24,12 +24,12 @@
     <sys:String x:Key="LOCATLauncherUninstallerError">ATLauncher Integration Instance Uninstaller Error</sys:String>
     <sys:String x:Key="LOCATLauncherMinecraft">Minecraft</sys:String>
     <sys:String x:Key="LOCATLauncherVanilla">Vanilla</sys:String>
-    <sys:String x:Key="LOCATLauncherContains">Contains</sys:String>
+    <sys:String x:Key="LOCATLauncherContains">Contiene</sys:String>
     <sys:String x:Key="LOCATLauncherModLoader">Mod Loader</sys:String>
     <sys:String x:Key="LOCATLauncherModList">Mod List</sys:String>
     <sys:String x:Key="LOCATLauncherMods">mods</sys:String>
-    <sys:String x:Key="LOCATLauncherBy">By</sys:String>
-    <sys:String x:Key="LOCATLauncherAnd">and</sys:String>
+    <sys:String x:Key="LOCATLauncherBy">Por</sys:String>
+    <sys:String x:Key="LOCATLauncherAnd">y</sys:String>
     <sys:String x:Key="LOCATLauncherCurseforgePage">Curseforge Page</sys:String>
     <sys:String x:Key="LOCATLauncherModrinthPage">Modrinth Page</sys:String>
     <sys:String x:Key="LOCATLauncherTechnicPage">Technic Page</sys:String>
