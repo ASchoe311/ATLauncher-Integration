@@ -35,7 +35,7 @@ namespace ATLauncherInstanceImporter
             }
             else if (folder != string.Empty)
             {
-                playniteAPI.Dialogs.ShowMessage("ATLauncher.exe not found at selected folder, setting will not be changed.");
+                playniteAPI.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherNotInFolder")}.");
             }
         }
 
