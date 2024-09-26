@@ -50,7 +50,7 @@
             {
                 return SourceEnum.Technic;
             }
-            return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value && Launcher.LoaderVersion == null) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
+            return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value && Launcher.LoaderVersion == null && Launcher.Mods.Count == 0) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
         }
 
         public HashSet<MetadataProperty> GetInstancePublishers()
