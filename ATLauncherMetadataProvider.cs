@@ -54,22 +54,22 @@ namespace ATLauncherInstanceImporter
             {
                 if ((instance.Launcher.LoaderVersion == null || instance.Launcher.LoaderVersion.Type == null) && instance.Launcher.Mods.Count == 0)
                 {
-                    return $"<h1>Vanilla Minecraft {instance.McVersion}</h1>";
+                    return $"<h1>{ResourceProvider.GetString("LOCATLauncherVanilla")} {ResourceProvider.GetString("LOCATLauncherMinecraft")} {instance.McVersion}</h1>";
                 }
             }
             if (instance.Launcher.Description != null)
             {
                 description = $"<h2>{instance.Launcher.Description}</h2>";
             }
-            description += $"<h1>Minecraft Version: {instance.McVersion}</h1>";
+            description += $"<h1>{ResourceProvider.GetString("LOCATLauncherMinecraft")} {ResourceProvider.GetString("LOCVersionLabel")}: {instance.McVersion}</h1>";
             if (instance.Launcher.LoaderVersion != null && instance.Launcher.LoaderVersion.Type != null)
             {
-                description += $"<h1>Mod Loader: {instance.Launcher.LoaderVersion.Type}</h1>";
+                description += $"<h1>{ResourceProvider.GetString("LOCATLauncherModLoader")}: {instance.Launcher.LoaderVersion.Type}</h1>";
             }
-            description += $"<h1>Contains {instance.Launcher.Mods.Count} mods</h1>";
+            description += $"<h1>{ResourceProvider.GetString("LOCATLauncherContains")} {instance.Launcher.Mods.Count} {ResourceProvider.GetString("LOCATLauncherMods")}</h1>";
             if (instance.Launcher.Mods.Count != 0) 
             {
-                description += "<h1>Mod List</h1><hr>";
+                description += $"<h1>{ResourceProvider.GetString("LOCATLauncherModList")}</h1><hr>";
             }
             foreach (var mod in instance.Launcher.Mods)
             {
@@ -88,13 +88,13 @@ namespace ATLauncherInstanceImporter
                 }
                 description += "</h2>";
                 var modAuths = Models.Instance.GetModAuthors(mod);
-                string authString = "By";
+                string authString = ResourceProvider.GetString("LOCATLauncherBy");
                 //logger.Debug($"{mod.Authors.Count()}");
                 for (int i = 0; i < modAuths.Count(); i++)
                 {
                     if (i == modAuths.Count() - 1 && i != 0)
                     {
-                        authString += " and";
+                        authString += $" {ResourceProvider.GetString("LOCATLauncherAnd")}";
                     }
                     authString += " " + $"<i>{modAuths[i]}</i>";
                     if (modAuths.Count() > 2 && i != modAuths.Count() - 1)

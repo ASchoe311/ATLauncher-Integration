@@ -166,38 +166,38 @@
                 case SourceEnum.CurseForge:
                     if (Launcher.CurseForgeProject.Links.WebsiteUrl != string.Empty)
                     {
-                        links.Add(new Link("CurseForge Page", Launcher.CurseForgeProject.Links.WebsiteUrl));
+                        links.Add(new Link(ResourceProvider.GetString("LOCATLauncherCurseforgePage"), Launcher.CurseForgeProject.Links.WebsiteUrl));
                     }
                     if (Launcher.CurseForgeProject.Links.SourceUrl != string.Empty)
                     {
-                        links.Add(new Link("Modpack Source", Launcher.CurseForgeProject.Links.SourceUrl));
+                        links.Add(new Link(ResourceProvider.GetString("LOCATLauncherModpackSource"), Launcher.CurseForgeProject.Links.SourceUrl));
                     }
                     if (Launcher.CurseForgeProject.Links.WikiUrl != string.Empty)
                     {
-                        links.Add(new Link("Modpack Wiki", Launcher.CurseForgeProject.Links.WikiUrl));
+                        links.Add(new Link(ResourceProvider.GetString("LOCATLauncherModpackWiki"), Launcher.CurseForgeProject.Links.WikiUrl));
                     }
                     break;
                 case SourceEnum.Modrinth:
-                    links.Add(new Link("Modrinth Page", $"https://modrinth.com/modpack/{Launcher.ModrinthProject.Slug}"));
+                    links.Add(new Link(ResourceProvider.GetString("LOCATLauncherModrinthPage"), $"https://modrinth.com/modpack/{Launcher.ModrinthProject.Slug}"));
                     if (Launcher.ModrinthProject.SourceUrl != null && Launcher.ModrinthProject.SourceUrl != string.Empty)
                     {
-                        links.Add(new Link("Modpack Source", Launcher.ModrinthProject.SourceUrl));
+                        links.Add(new Link(ResourceProvider.GetString("LOCATLauncherModpackSource"), Launcher.ModrinthProject.SourceUrl));
                     }
                     if (Launcher.ModrinthProject.WikiUrl != null && Launcher.ModrinthProject.WikiUrl != string.Empty)
                     {
-                        links.Add(new Link("Modpack Wiki", Launcher.ModrinthProject.WikiUrl));
+                        links.Add(new Link(ResourceProvider.GetString("LOCATLauncherModpackWiki"), Launcher.ModrinthProject.WikiUrl));
                     }
                     break;
                 case SourceEnum.Technic:
                     if (Launcher.TechnicModpack.PackUrl != null && Launcher.TechnicModpack.PackUrl != string.Empty)
                     {
-                        links.Add(new Link("Technic Page", Launcher.TechnicModpack.PackUrl));
+                        links.Add(new Link(ResourceProvider.GetString("LOCATLauncherTechnicPage"), Launcher.TechnicModpack.PackUrl));
                     }
                     break;
                 case SourceEnum.ATLauncher:
                     Regex rgx = new Regex("[^a-zA-Z0-9-]");
                     string packSlug = rgx.Replace(Launcher.Pack, "").ToLower();
-                    links.Add(new Link("ATLauncher Page", $"https://atlauncher.com/pack/{packSlug}"));
+                    links.Add(new Link(ResourceProvider.GetString("LOCATLauncherATLauncherPage"), $"https://atlauncher.com/pack/{packSlug}"));
                     break;
                 case SourceEnum.Vanilla:
                     links.Add(new Link("Minecraft.net", "https://www.minecraft.net/"));

@@ -102,7 +102,7 @@ namespace ATLauncherInstanceImporter
                 return dirs;
                 //return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
             }
-            PlayniteApi.Notifications.Add(new NotificationMessage(Guid.NewGuid().ToString(), "ATLauncher installation not found, please check addon settings", NotificationType.Error));
+            PlayniteApi.Notifications.Add(new NotificationMessage(Guid.NewGuid().ToString(), ResourceProvider.GetString("LOCATLauncherNotFound"), NotificationType.Error));
             logger.Warn("Playnite tried to get ATLauncher instances, but ATLauncher location is not set");
             return new List<string>();
 
@@ -167,13 +167,13 @@ namespace ATLauncherInstanceImporter
                 {
                     logger.Error($"An unrecoverable error occurred while trying to add instance located at {dir} to library:\n{ex.StackTrace}");
                     //PlayniteApi.Notifications.Add(new NotificationMessage(Path.GetFileName(dir), $"An unrecoverable error occurred while importing the ATLauncher instance at {dir}, please add it to the ignore list", NotificationType.Error));
-                    string errMsg = $"The instance located at\n\n{dir}\n\nCould not be added due to the following error\n\n{ex.Message}.\n\n";
+                    string errMsg = $"{ResourceProvider.GetString("LOCATLauncherInstanceAt")}\n\n{dir}\n\n{ResourceProvider.GetString("LOCATLauncherAddError")}\n\n{ex.Message}.\n\n";
                     if (settings.Settings.AutoIgnoreInstances)
                     {
-                        errMsg += "It will be automatically added to the ignore list in settings.\n\n";
+                        errMsg += $"{ResourceProvider.GetString("LOCATLauncherIgnoreAdded")}.\n\n";
                     }
-                    errMsg += "Please report this as an issue on github with the accompanying stack trace found in extensions.log";
-                    PlayniteApi.Dialogs.ShowErrorMessage(errMsg, "ATLauncher Instance Import Error");
+                    errMsg += ResourceProvider.GetString("LOCATLauncherReportIssue");
+                    PlayniteApi.Dialogs.ShowErrorMessage(errMsg, ResourceProvider.GetString("LOCATLauncherImportError"));
                     if (settings.Settings.AutoIgnoreInstances)
                     {
                         Application.Current.Dispatcher.Invoke((Action)delegate
@@ -269,8 +269,8 @@ namespace ATLauncherInstanceImporter
         internal void DisplayLauncherError()
         {
             PlayniteApi.Dialogs.ShowErrorMessage(
-                $"The path to your launcher installation isn't valid:\n{Launcher.InstancePath}",
-                "ATLauncher Integration Plugin Error"
+                $"{ResourceProvider.GetString("LOCATLauncherInvalidInstall")}:\n{Launcher.InstancePath}",
+                ResourceProvider.GetString("LOCATLauncherPluginError")
             );
         }
 
@@ -281,7 +281,7 @@ namespace ATLauncherInstanceImporter
                 yield break;
             }
             AutomaticPlayController playController = new AutomaticPlayController(args.Game);
-            playController.Name = "Play";
+            playController.Name = ResourceProvider.GetString("LOCPlayGame");
             playController.Path = Path.Combine(settings.Settings.ATLauncherLoc, "ATLauncher.exe");
             playController.Arguments = GetLaunchString(args.Game.InstallDirectory);
             playController.WorkingDir = settings.Settings.ATLauncherLoc;
@@ -294,7 +294,7 @@ namespace ATLauncherInstanceImporter
         {
             public ATLauncherUninstallController(Game game) : base(game)
             {
-                Name = $"Uninstall (delete instance folder for) {game.Name}";
+                Name = $"{ResourceProvider.GetString("LOCATLauncherUninstallName")} {game.Name}";
             }
 
             public override void Uninstall(UninstallActionArgs args)
@@ -302,7 +302,7 @@ namespace ATLauncherInstanceImporter
                 logger.Info($"Deleting instance folder for {Game.Name} ({Game.InstallDirectory})");
                 if (!Directory.Exists(Game.InstallDirectory))
                 {
-                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"Cannot locate instance folder for {Game.Name}, removing from Playnite");
+                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherCantLocate")} {Game.Name}, {ResourceProvider.GetString("LOCATLauncherRemovingInstance")}");
                     InvokeOnUninstalled(new GameUninstalledEventArgs());
                     Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
                     return;
@@ -311,13 +311,13 @@ namespace ATLauncherInstanceImporter
                 if (!Directory.Exists(Game.InstallDirectory))
                 {
                     InvokeOnUninstalled(new GameUninstalledEventArgs());
-                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"Removed instance {Game.Name} and deleted files");
+                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherRemovedInstance")} {Game.Name} {ResourceProvider.GetString("LOCATLauncherDeletedFiles")}");
                     Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
                     return;
                 }
                 Playnite.SDK.API.Instance.Dialogs.ShowErrorMessage(
-                    $"Something went wrong deleting instance folder for {Game.Name}",
-                    "ATLauncher Integration Instance Uninstaller Error"
+                    $"{ResourceProvider.GetString("LOCATLauncherUninstallWrong")} {Game.Name}",
+                    ResourceProvider.GetString("LOCATLauncherUninstallerError")
                 );
             }
         }
