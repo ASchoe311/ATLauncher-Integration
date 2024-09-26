@@ -61,7 +61,7 @@ namespace ATLauncherInstanceImporter
             {
                 description = $"<h2>{instance.Launcher.Description}</h2>";
             }
-            description += $"<h1>{ResourceProvider.GetString("LOCATLauncherMinecraft")} {ResourceProvider.GetString("LOCVersionLabel")}: {instance.McVersion}</h1>";
+            description += $"<h1>{ResourceProvider.GetString("LOCATLauncherMinecraftVersion")}: {instance.McVersion}</h1>";
             if (instance.Launcher.LoaderVersion != null && instance.Launcher.LoaderVersion.Type != null)
             {
                 description += $"<h1>{ResourceProvider.GetString("LOCATLauncherModLoader")}: {instance.Launcher.LoaderVersion.Type}</h1>";
