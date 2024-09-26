@@ -1,5 +1,0 @@
-Settings
-	Game ID format
-Automatic ATL location detection
-Localization
-Unit testing
