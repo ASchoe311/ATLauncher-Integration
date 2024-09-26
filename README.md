@@ -1,5 +1,5 @@
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/ASchoe311/ATLauncher-Integration/latest/total?label=Latest%20Release%20Downloads)    ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ASchoe311/ATLauncher-Integration/total?label=Lifetime%20Downloads)
-
+[![Crowdin](https://badges.crowdin.net/atlauncher-instance-library/localized.svg)](https://crowdin.com/project/atlauncher-instance-library)
 
 # [ATLauncher](https://atlauncher.com/) integration plugin for [Playnite](https://playnite.link/)
 
