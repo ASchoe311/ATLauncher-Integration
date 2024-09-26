@@ -54,7 +54,7 @@ namespace ATLauncherInstanceImporter
             {
                 if ((instance.Launcher.LoaderVersion == null || instance.Launcher.LoaderVersion.Type == null) && instance.Launcher.Mods.Count == 0)
                 {
-                    return $"<h1>{ResourceProvider.GetString("LOCATLauncherVanilla")} {ResourceProvider.GetString("LOCATLauncherMinecraft")} {instance.McVersion}</h1>";
+                    return $"<h1>{ResourceProvider.GetString("LOCATLauncherVanillaMinecraft")} {instance.McVersion}</h1>";
                 }
             }
             if (instance.Launcher.Description != null)
