@@ -1,6 +1,5 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+﻿<?xml version="1.0"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="LOCATLauncherLocation">Location of ATLauncher folder</sys:String>
     <sys:String x:Key="LOCATLauncherShowConsole">Show ATLauncher console while launching instance</sys:String>
     <sys:String x:Key="LOCATLauncherAutoClose">Automatically close ATLauncher when instance is launched</sys:String>
