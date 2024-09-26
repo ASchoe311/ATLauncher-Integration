@@ -6,8 +6,6 @@
 Enables Playnite to import and launch Minecraft instances made using ATLauncher as if they were individual games. 
 This is still a work in progress and will continue to be improved
 
-### Please contribute translations on [Crowdin](https://crowdin.com/project/atlauncher-instance-library)!
-
 ## Installation
 
 Download the latest .pext file from releases and open it using Playnite
