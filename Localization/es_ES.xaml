@@ -22,7 +22,7 @@
     <sys:String x:Key="LOCATLauncherDeletedFiles">and deleted files</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallWrong">Something went wrong deleting instance folder for</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallerError">ATLauncher Integration Instance Uninstaller Error</sys:String>
-    <sys:String x:Key="LOCATLauncherMinecraft">Minecraft</sys:String>
+    <sys:String x:Key="LOCATLauncherMinecraftVersion">Minecraft Version</sys:String>
     <sys:String x:Key="LOCATLauncherVanilla">Vanilla</sys:String>
     <sys:String x:Key="LOCATLauncherContains">Contiene</sys:String>
     <sys:String x:Key="LOCATLauncherModLoader">Mod Loader</sys:String>
