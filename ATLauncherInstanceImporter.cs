@@ -241,31 +241,6 @@ namespace ATLauncherInstanceImporter
             return new ATLauncherInstanceImporterSettingsView();
         }
 
-        public void UpdateLaunchArgs()
-        {
-            SetClient();
-            PlayniteApi.Database.Games.BeginBufferUpdate();
-            foreach (var game in PlayniteApi.Database.Games)
-            {
-                if (game.PluginId != Id)
-                {
-                    continue;
-                }
-                logger.Info($"Updating launch arguments for instance {game.Name}");
-                var action = game.GameActions[0];
-                game.GameActions[0] = new GameAction
-                {
-                    Type = GameActionType.File,
-                    Path = action.Path,
-                    Arguments = GetLaunchString(game.InstallDirectory),
-                    WorkingDir = settings.Settings.ATLauncherLoc,
-                    TrackingMode = TrackingMode.Default,
-                    IsPlayAction = true
-                };
-                PlayniteApi.Database.Games.Update(game);
-            }
-            PlayniteApi.Database.Games.EndBufferUpdate();
-        }
         internal void DisplayLauncherError()
         {
             PlayniteApi.Dialogs.ShowErrorMessage(
