@@ -1,5 +1,12 @@
 ﻿AddonId: ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b
 Packages:
+  - Version: 2.2.1
+    RequiredApiVersion: 6.2.0
+    ReleaseDate: 2024-09-27
+    PackageUrl: https://github.com/ASchoe311/ATLauncher-Integration/releases/download/v2.2.1/ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b_2_2_1.pext
+    Changelog:
+    - Fixed a major bug causing Playnite to crash when changing certain settings
+    - Added localization support with crowdin 
   - Version: 2.2.0
     RequiredApiVersion: 6.2.0
     ReleaseDate: 2024-09-25
