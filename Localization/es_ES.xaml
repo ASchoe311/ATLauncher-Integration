@@ -37,4 +37,6 @@
     <sys:String x:Key="LOCATLauncherModpackSource">Fuente del Modpack</sys:String>
     <sys:String x:Key="LOCATLauncherModpackWiki">Wiki del Modpack</sys:String>
     <sys:String x:Key="LOCATLauncherNotInFolder">ATLauncher.exe no se encuentra en la carpeta seleccionada, la configuración no se modificará</sys:String>
+    <sys:String x:Key="LOCATLauncherResizeCovers">Reshape instance cover art to portrait</sys:String>
+    <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Alters cover art so that it looks better when using Playnite in fullscreen mode</sys:String>
 </ResourceDictionary>
