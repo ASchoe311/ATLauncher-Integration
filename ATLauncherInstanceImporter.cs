@@ -282,18 +282,24 @@ namespace ATLauncherInstanceImporter
                     Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
                     return;
                 }
-                Directory.Delete(Game.InstallDirectory, true);
-                if (!Directory.Exists(Game.InstallDirectory))
+                try
                 {
-                    InvokeOnUninstalled(new GameUninstalledEventArgs());
-                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherRemovedInstance")} {Game.Name} {ResourceProvider.GetString("LOCATLauncherDeletedFiles")}");
-                    Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
-                    return;
+                    Directory.Delete(Game.InstallDirectory, true);
+                    if (!Directory.Exists(Game.InstallDirectory))
+                    {
+                        InvokeOnUninstalled(new GameUninstalledEventArgs());
+                        Playnite.SDK.API.Instance.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherRemovedInstance")} {Game.Name} {ResourceProvider.GetString("LOCATLauncherDeletedFiles")}");
+                        Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
+                        return;
+                    }
                 }
-                Playnite.SDK.API.Instance.Dialogs.ShowErrorMessage(
-                    $"{ResourceProvider.GetString("LOCATLauncherUninstallWrong")} {Game.Name}",
-                    ResourceProvider.GetString("LOCATLauncherUninstallerError")
-                );
+                catch (Exception e)
+                {
+                    Playnite.SDK.API.Instance.Dialogs.ShowErrorMessage(
+                        $"{ResourceProvider.GetString("LOCATLauncherUninstallWrong")} {Game.Name}",
+                        ResourceProvider.GetString("LOCATLauncherUninstallerError")
+                    );
+                }
             }
         }
             public override IEnumerable<UninstallController> GetUninstallActions(GetUninstallActionsArgs args)
