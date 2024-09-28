@@ -20,7 +20,7 @@
     <sys:String x:Key="LOCATLauncherRemovingInstance">Removing from Playnite</sys:String>
     <sys:String x:Key="LOCATLauncherRemovedInstance">Gelöschte Instanz</sys:String>
     <sys:String x:Key="LOCATLauncherDeletedFiles">und gelöschte Dateien</sys:String>
-    <sys:String x:Key="LOCATLauncherUninstallWrong">When deleting the folder for the following instance, something went wrong</sys:String>
+    <sys:String x:Key="LOCATLauncherUninstallWrong">When deleting the folder for the following instance, something went wrong:</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallerError">ATLauncher Integration Instanz-deinstallationsFehler</sys:String>
     <sys:String x:Key="LOCATLauncherMinecraftVersion">Minecraft Version</sys:String>
     <sys:String x:Key="LOCATLauncherVanillaMinecraft">Vanilla Minecraft</sys:String>
