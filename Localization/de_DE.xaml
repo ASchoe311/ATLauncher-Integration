@@ -17,7 +17,7 @@
     <sys:String x:Key="LOCATLauncherPluginError">ATLauncher Integrations-Plugin Fehler</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallName">Deinstallation (Instanzordner löschen)</sys:String>
     <sys:String x:Key="LOCATLauncherCantLocate">Instanzordner für [...] kann nicht gefunden werden</sys:String>
-    <sys:String x:Key="LOCATLauncherRemovingInstance">Von Playnite löschen</sys:String>
+    <sys:String x:Key="LOCATLauncherRemovingInstance">von Playnite löschen</sys:String>
     <sys:String x:Key="LOCATLauncherRemovedInstance">Gelöschte Instanz</sys:String>
     <sys:String x:Key="LOCATLauncherDeletedFiles">und gelöschte Dateien</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallWrong">Etwas ist beim Löschen des Instanz-Ordners für [...] schiefgelaufen</sys:String>
