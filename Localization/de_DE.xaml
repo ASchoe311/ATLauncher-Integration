@@ -27,8 +27,8 @@
     <sys:String x:Key="LOCATLauncherContains">Enthält</sys:String>
     <sys:String x:Key="LOCATLauncherModLoader">Mod Loader</sys:String>
     <sys:String x:Key="LOCATLauncherModList">Mod-Liste</sys:String>
-    <sys:String x:Key="LOCATLauncherMods">Mods</sys:String>
-    <sys:String x:Key="LOCATLauncherBy">nach</sys:String>
+    <sys:String x:Key="LOCATLauncherMods">mods</sys:String>
+    <sys:String x:Key="LOCATLauncherBy">Nach</sys:String>
     <sys:String x:Key="LOCATLauncherAnd">und</sys:String>
     <sys:String x:Key="LOCATLauncherCurseforgePage">Curseforge-Seite</sys:String>
     <sys:String x:Key="LOCATLauncherModrinthPage">Modrinth-Seite</sys:String>
