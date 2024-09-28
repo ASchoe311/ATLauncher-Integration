@@ -21,6 +21,7 @@ namespace ATLauncherInstanceImporter
         private bool closeATLOnLaunch = true;
         private bool _AddMetadataOnImport = true;
         private bool _AutoIgnoreInstances = true;
+        private bool _ResizeCovers = true;
         private int _PluginVersion = 1;
 
         public string ATLauncherLoc { get => aTLauncherLoc; set => SetValue(ref aTLauncherLoc, value); }
@@ -30,6 +31,7 @@ namespace ATLauncherInstanceImporter
         public ObservableCollection<string> InstanceIgnoreList { get; set; } = new ObservableCollection<string>();
         public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
         public bool AutoIgnoreInstances { get => _AutoIgnoreInstances; set => SetValue(ref _AutoIgnoreInstances, value); }
+        public bool ResizeCovers { get => _ResizeCovers; set => SetValue(ref _ResizeCovers, value); }
 
     }
 

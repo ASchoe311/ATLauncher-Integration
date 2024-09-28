@@ -128,7 +128,7 @@ namespace ATLauncherInstanceImporter
                 try
                 {
                     Models.Instance instance = GetInstance(dir);
-                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir);
+                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.ResizeCovers);
                     if (settings.Settings.AddMetadataOnImport)
                     {
                         games.Add(new GameMetadata()
@@ -229,7 +229,7 @@ namespace ATLauncherInstanceImporter
 
         public override LibraryMetadataProvider GetMetadataDownloader()
         {
-            return new ATLauncherMetadataProvider(this);
+            return new ATLauncherMetadataProvider(this, settings.Settings.ResizeCovers);
         }
         public override ISettings GetSettings(bool firstRunSettings)
         {
