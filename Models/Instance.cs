@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-
+    using System.Drawing;
+    using System.Drawing.Drawing2D;
+    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Net;
@@ -207,11 +209,36 @@
             return links;
         }
 
-        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir)
+        private static bool TrySaveImage(string imageUrl, out Bitmap bmp)
+        {
+            try
+            {
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(imageUrl);
+                bmp = new Bitmap(stream);
+                return true;
+            }
+            catch
+            {
+                bmp = null;
+                return false;
+            }
+        }
+
+        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize)
         {
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
-            var cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png"));
-            var background = cover;
+            MetadataFile cover = new MetadataFile();
+            Bitmap bmp;
+            if (resize)
+            {
+                cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimagerect.png"));
+            }
+            else
+            {
+                cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png"));
+            }
+            var background = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png"));
             switch (instance.PackSource())
             {
                 case SourceEnum.CurseForge:
@@ -221,8 +248,20 @@
                     }
                     if (instance.Launcher.CurseForgeProject.Logo.Url != null && instance.Launcher.CurseForgeProject.Logo.Url != string.Empty)
                     {
-                        cover = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
-                        background = cover;
+                        if (resize && TrySaveImage(instance.Launcher.CurseForgeProject.Logo.Url, out bmp))
+                        {
+                            using (var ms = new MemoryStream())
+                            {
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
+                                byte[] imgData = ms.ToArray();
+                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                            }
+                        }
+                        else
+                        {
+                            cover = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
+                        }
+                        background = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
                     }
                     break;
                 case SourceEnum.Modrinth:
@@ -232,8 +271,22 @@
                     }
                     if (File.Exists(Path.Combine(instanceDir, "instance.png")))
                     {
-                        cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
-                        background = cover;
+                        if (resize)
+                        {
+                            bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
+                            using (var ms = new MemoryStream())
+                            {
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
+                                byte[] imgData = ms.ToArray();
+                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                            }
+
+                        }
+                        else
+                        {
+                            cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+                        }
+                        background = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
                     }
                     break;
                 case SourceEnum.Technic:
@@ -243,8 +296,20 @@
                     }
                     if (instance.Launcher.TechnicModpack.Logo.Url != null && instance.Launcher.TechnicModpack.Logo.Url != string.Empty)
                     {
-                        cover = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
-                        background = cover;
+                        if (resize && TrySaveImage(instance.Launcher.TechnicModpack.Logo.Url, out bmp))
+                        {
+                            using (var ms = new MemoryStream())
+                            {
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
+                                byte[] imgData = ms.ToArray();
+                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                            }
+                        }
+                        else
+                        {
+                            cover = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
+                        }
+                        background = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
                     }
                     break;
                 case SourceEnum.ATLauncher:
@@ -255,8 +320,20 @@
                         packSlug = Regex.Replace(packSlug, @"\s+", "");
                         WebClient webClient = new WebClient();
                         var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                        cover = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                        background = cover;
+                        if (resize && TrySaveImage($"https://cdn.atlcdn.net/images/packs/{packSlug}.png", out bmp))
+                        {
+                            using (var ms = new MemoryStream())
+                            {
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
+                                byte[] imgData = ms.ToArray();
+                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                            }
+                        }
+                        else
+                        {
+                            cover = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
+                        }
+                        background = new MetadataFile($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
                     }
                     catch (Exception e)
                     {
@@ -270,6 +347,29 @@
                     break;
             }
             return Tuple.Create(icon, cover, background);
+        }
+
+        /// <summary>
+        /// Reshapes and resizes a bitmap with given parameters by resizing it and padding it with black bars
+        /// </summary>
+        /// <param name="b">Bitmap to reshape</param>
+        /// <param name="nWidth">Target width</param>
+        /// <param name="nHeight">Target height</param>
+        /// <returns>Reshaped and resized bitmap</returns>
+        private static Bitmap ResizeBitmapWithPadding(Bitmap b, int nWidth, int nHeight)
+        {
+            int newHeight = (int)(((double)nWidth / (double)b.Width) * (double)b.Height);
+            Bitmap result = new Bitmap(nWidth, nHeight);
+            using (Graphics g = Graphics.FromImage((System.Drawing.Image)result))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.CompositingQuality = CompositingQuality.HighQuality;
+                g.Clear(System.Drawing.Color.Black);
+                g.DrawImage(b, 0, ((nHeight / 2) - (newHeight / 2)), nWidth, newHeight);
+            }
+            return result;
         }
 
         public ReleaseDate? GetReleaseDate()

@@ -45,5 +45,7 @@
             </DataGrid>
         </DockPanel>
         <CheckBox Content="{DynamicResource LOCATLauncherAddIgnore}" IsChecked="{Binding Settings.AutoIgnoreInstances}" Margin="10,5,0,5"/>
+        <CheckBox Content="{DynamicResource LOCATLauncherResizeCovers}" ToolTip="{DynamicResource LOCATLauncherResizeCoversTooltip}"
+                  IsChecked="{Binding Settings.ResizeCovers}" Margin="10,5,0,5" />
     </StackPanel>
 </UserControl>
