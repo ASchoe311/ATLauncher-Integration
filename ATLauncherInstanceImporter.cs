@@ -277,7 +277,7 @@ namespace ATLauncherInstanceImporter
                 logger.Info($"Deleting instance folder for {Game.Name} ({Game.InstallDirectory})");
                 if (!Directory.Exists(Game.InstallDirectory))
                 {
-                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherCantLocate")} {Game.Name}, {ResourceProvider.GetString("LOCATLauncherRemovingInstance")}");
+                    Playnite.SDK.API.Instance.Dialogs.ShowMessage($"{ResourceProvider.GetString("LOCATLauncherCantLocate")} {Game.Name}\n\n{ResourceProvider.GetString("LOCATLauncherRemovingInstance")}");
                     InvokeOnUninstalled(new GameUninstalledEventArgs());
                     Playnite.SDK.API.Instance.Database.Games.Remove(Game.Id);
                     return;
