@@ -296,9 +296,10 @@ namespace ATLauncherInstanceImporter
                 catch (Exception e)
                 {
                     Playnite.SDK.API.Instance.Dialogs.ShowErrorMessage(
-                        $"{ResourceProvider.GetString("LOCATLauncherUninstallWrong")} {Game.Name}",
+                        $"{ResourceProvider.GetString("LOCATLauncherUninstallWrong")} {Game.Name}\n\n{e.Message}",
                         ResourceProvider.GetString("LOCATLauncherUninstallerError")
                     );
+                    Game.IsUninstalling = false;
                 }
             }
         }
