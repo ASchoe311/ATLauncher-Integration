@@ -21,7 +21,7 @@ namespace ATLauncherInstanceImporter
         private bool closeATLOnLaunch = true;
         private bool _AddMetadataOnImport = true;
         private bool _AutoIgnoreInstances = true;
-        private bool _ResizeCovers = true;
+        private bool _ResizeCovers = false;
         private int _PluginVersion = 1;
 
         public string ATLauncherLoc { get => aTLauncherLoc; set => SetValue(ref aTLauncherLoc, value); }
