@@ -51,7 +51,7 @@ namespace ATLauncherInstanceImporter
         //private int _PluginVersion = 2;
 
         public override Guid Id { get; } = Guid.Parse("40e56f44-4955-40ec-9bf3-682c4007e55b");
-        private int vNum = 2;
+        private int vNum = 3;
         // Change to something more appropriate
         public override string Name => "ATLauncher";
 
@@ -241,6 +241,7 @@ namespace ATLauncherInstanceImporter
                     }
                     var inst = GetInstance(game.InstallDirectory);
                     game.Description = ATLauncherMetadataProvider.GenerateInstanceDescription(inst);
+                    PlayniteApi.Database.Games.Update(game);
                 }
                 PlayniteApi.Database.Games.EndBufferUpdate();
                 settings.Settings.PluginVersion = vNum;
