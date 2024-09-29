@@ -141,6 +141,10 @@ namespace ATLauncherInstanceImporter
             {
                 plugin.SetClient();
             }
+            if (Settings.ResizeCovers != editingClone.ResizeCovers)
+            {
+                plugin.ResizeCoversAsync(Settings.ResizeCovers);
+            }
         }
 
         public bool VerifySettings(out List<string> errors)

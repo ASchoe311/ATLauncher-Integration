@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using Playnite.SDK.Events;
 using System.Reflection;
 using System.Windows;
+using System.Drawing.Imaging;
 
 namespace ATLauncherInstanceImporter
 {
@@ -76,6 +77,10 @@ namespace ATLauncherInstanceImporter
             Launcher = new ATLauncher(settings.Settings.ATLauncherLoc);
         }
 
+        /// <summary>
+        /// Gets optional arguments for ATLauncher CLI
+        /// </summary>
+        /// <returns>A string containing optional arguments to pass to ATLauncher CLI</returns>
         private string GetCLIArgs()
         {
             string args = "";
@@ -90,6 +95,10 @@ namespace ATLauncherInstanceImporter
             return args;
         }
 
+        /// <summary>
+        /// Enumerates all directories containing instances
+        /// </summary>
+        /// <returns>A list of strings representing paths to instance folders</returns>
         private List<string> GetInstanceDirs()
         {
             if (Client.IsInstalled)
@@ -108,11 +117,21 @@ namespace ATLauncherInstanceImporter
 
         }
 
+        /// <summary>
+        /// Gets the string used to launch the instance located at <c>instanceDir</c>
+        /// </summary>
+        /// <param name="instanceDir">The directory containing the instance</param>
+        /// <returns>A string representing the launch argument to pass to ATLauncher CLI</returns>
         private string GetLaunchString(string instanceDir)
         {
             return "-launch " + Path.GetFileName(instanceDir) + GetCLIArgs();
         }
 
+        /// <summary>
+        /// Deserealizes instance.json for an ATLauncher instance into an <c>Instance</c> object
+        /// </summary>
+        /// <param name="instanceDir">The directory containing the instance</param>
+        /// <returns>An <c>Instance</c> object containing information about an ATLauncher instance</returns>
         public Models.Instance GetInstance(string instanceDir)
         {
             return Models.Instance.FromJson(File.ReadAllText(Path.Combine(instanceDir, "instance.json")));
@@ -188,6 +207,10 @@ namespace ATLauncherInstanceImporter
             return games;
         }
 
+        /// <summary>
+        /// Removes old play actions and updates instance descriptions with new data on first application start with new plugin version
+        /// </summary>
+        /// <param name="args"></param>
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
         {
             if (settings.Settings.PluginVersion != vNum)
@@ -312,5 +335,54 @@ namespace ATLauncherInstanceImporter
 
             yield return new ATLauncherUninstallController(args.Game);
         }
+
+        /// <summary>
+        /// Resizes the cover images on demand without blocking UI thread
+        /// </summary>
+        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
+        public async void ResizeCoversAsync(bool toPortrait)
+        {
+            await Task.Run(() => ResizeCovers(toPortrait));
+        }
+
+        /// <summary>
+        /// Changes cover images for instances between standard and portrait mode
+        /// </summary>
+        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
+        private void ResizeCovers(bool toPortrait)
+        {
+            PlayniteApi.Database.Games.BeginBufferUpdate();
+            foreach (var game in PlayniteApi.Database.Games)
+            {
+                if (game.PluginId != Id)
+                {
+                    continue;
+                }
+                logger.Debug($"Changing cover for {game.Name}");
+                var instance = GetInstance(game.InstallDirectory);
+                //logger.Debug(instance.PackSource().ToString());
+                var packImgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, toPortrait);
+                //logger.Debug(PlayniteApi.Database.GetFileStoragePath(game.Id));
+                if (toPortrait && packImgs.Item2.HasContent)
+                {
+                    string imgPath = Path.Combine(GetPluginUserDataPath(), $"{game.Id}_cover.png");
+                    using (var ms = new MemoryStream(packImgs.Item2.Content))
+                    {
+                        System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+                        img.Save(imgPath, ImageFormat.Png);
+                    }
+                    //PlayniteApi.Database.AddFile(imgPath, game.Id);
+                    game.CoverImage = PlayniteApi.Database.AddFile(imgPath, game.Id);
+                }
+                else
+                {
+                    game.CoverImage = packImgs.Item2.Path;
+                }
+                PlayniteApi.Database.Games.Update(game);
+                logger.Debug($"Successfully changed cover for {game.Name}");
+            }
+            PlayniteApi.Database.Games.EndBufferUpdate();
+        }
+
     }
 }
