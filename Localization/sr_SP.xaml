@@ -16,11 +16,11 @@
     <sys:String x:Key="LOCATLauncherInvalidInstall">The path to your launcher installation isn't valid</sys:String>
     <sys:String x:Key="LOCATLauncherPluginError">ATLauncher Integration Plugin Error</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallName">Uninstall (delete instance folder for)</sys:String>
-    <sys:String x:Key="LOCATLauncherCantLocate">Cannot locate instance folder for</sys:String>
-    <sys:String x:Key="LOCATLauncherRemovingInstance">removing from Playnite</sys:String>
+    <sys:String x:Key="LOCATLauncherCantLocate">The folder for the following instance cannot be found:</sys:String>
+    <sys:String x:Key="LOCATLauncherRemovingInstance">Removing from Playnite</sys:String>
     <sys:String x:Key="LOCATLauncherRemovedInstance">Removed instance</sys:String>
     <sys:String x:Key="LOCATLauncherDeletedFiles">and deleted files</sys:String>
-    <sys:String x:Key="LOCATLauncherUninstallWrong">Something went wrong deleting instance folder for</sys:String>
+    <sys:String x:Key="LOCATLauncherUninstallWrong">When deleting the folder for the following instance, something went wrong:</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallerError">ATLauncher Integration Instance Uninstaller Error</sys:String>
     <sys:String x:Key="LOCATLauncherMinecraftVersion">Minecraft Version</sys:String>
     <sys:String x:Key="LOCATLauncherVanillaMinecraft">Vanilla Minecraft</sys:String>
@@ -37,4 +37,6 @@
     <sys:String x:Key="LOCATLauncherModpackSource">Modpack Source</sys:String>
     <sys:String x:Key="LOCATLauncherModpackWiki">Modpack Wiki</sys:String>
     <sys:String x:Key="LOCATLauncherNotInFolder">ATLauncher.exe not found at selected folder, setting will not be changed</sys:String>
+    <sys:String x:Key="LOCATLauncherResizeCovers">Reshape instance cover art to portrait</sys:String>
+    <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Alters cover art so that it looks better when using Playnite in fullscreen mode</sys:String>
 </ResourceDictionary>
