@@ -372,7 +372,7 @@ namespace ATLauncherInstanceImporter
                         img.Save(imgPath, ImageFormat.Png);
                     }
                     //PlayniteApi.Database.AddFile(imgPath, game.Id);
-                    game.CoverImage = PlayniteApi.Database.AddFile(imgPath, game.Id);
+                    game.CoverImage = imgPath;
                 }
                 else
                 {
