@@ -38,6 +38,10 @@
         [JsonProperty("releaseTime", NullValueHandling = NullValueHandling.Ignore)]
         public DateTimeOffset? ReleaseTime { get; set; }
 
+        /// <summary>
+        /// Gets the source of the ATLauncher instance
+        /// </summary>
+        /// <returns>An enum representing instance source</returns>
         public SourceEnum PackSource()
         {
             if (Launcher.CurseForgeProject != null)
@@ -55,6 +59,10 @@
             return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value && Launcher.LoaderVersion == null && Launcher.Mods.Count == 0) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
         }
 
+        /// <summary>
+        /// Gets the publisher metadata for an instance
+        /// </summary>
+        /// <returns>A HashSet containing publishers for game metadata</returns>
         public HashSet<MetadataProperty> GetInstancePublishers()
         {
             HashSet<MetadataProperty> publishers = new HashSet<MetadataProperty> { new MetadataNameProperty("Mojang Studios") };
@@ -76,6 +84,10 @@
             return publishers;
         }
 
+        /// <summary>
+        /// Gets the authors of a modpack
+        /// </summary>
+        /// <returns>A HashSet containing authors of a modpack</returns>
         public HashSet<MetadataProperty> GetPackAuthors()
         {
             HashSet<MetadataProperty> authors = new HashSet<MetadataProperty>();
@@ -123,6 +135,12 @@
             return authors;
         }
 
+        /// <summary>
+        /// Gets the authors of a mod
+        /// </summary>
+        /// <param name="mod">The <c>Mod</c> to get authors for</param>
+        /// <see cref=">Mod"/>
+        /// <returns>A List of author names</returns>
         public static List<string> GetModAuthors(Mod mod)
         {
             List<string> authors = new List<string>();
@@ -160,6 +178,10 @@
             return authors;
         }
 
+        /// <summary>
+        /// Gets the links for instance metadata
+        /// </summary>
+        /// <returns>A List of Links for the instance</returns>
         public List<Link> GetPackLinks()
         {
             List<Link> links = new List<Link>();
@@ -209,6 +231,12 @@
             return links;
         }
 
+        /// <summary>
+        /// Try to save an image from the internet as a bitmap
+        /// </summary>
+        /// <param name="imageUrl">The URL of the image</param>
+        /// <param name="bmp">The output Bitmap object</param>
+        /// <returns>A boolean representing success of saving the image</returns>
         private static bool TrySaveImage(string imageUrl, out Bitmap bmp)
         {
             try
@@ -225,6 +253,13 @@
             }
         }
 
+        /// <summary>
+        /// Gets the images (icon, cover, background) for an instance
+        /// </summary>
+        /// <param name="instance">The <c>Instance</c> to get images for</param>
+        /// <param name="instanceDir">The path to the instance folder</param>
+        /// <param name="resize">Determines whether or not the cover images should be resized to portrait</param>
+        /// <returns>A Tuple of MetadataFiles representing icon, cover, and background</returns>
         public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize)
         {
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
@@ -372,6 +407,10 @@
             return result;
         }
 
+        /// <summary>
+        /// Gets the release date for an instance
+        /// </summary>
+        /// <returns>The release date for the instance, if it has one</returns>
         public ReleaseDate? GetReleaseDate()
         {
             switch (PackSource())
