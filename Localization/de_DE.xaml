@@ -39,4 +39,5 @@
     <sys:String x:Key="LOCATLauncherNotInFolder">ATLauncher.exe im ausgewählten Ordner nicht gefunden, Einstellung wird nicht geändert</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCovers">Cover-Art in Hochformat umwandeln</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Verändert das Cover-Art so, dass es besser aussieht, wenn Playnite im Vollbildmodus verwendet wird</sys:String>
+    <sys:String x:Key="LOCATLauncherChangingCovers">Updating Cover Art</sys:String>
 </ResourceDictionary>
