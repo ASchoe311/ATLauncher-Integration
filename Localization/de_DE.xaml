@@ -17,7 +17,7 @@
     <sys:String x:Key="LOCATLauncherPluginError">ATLauncher Integrations-Plugin Fehler</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallName">Deinstallation (Instanzordner löschen)</sys:String>
     <sys:String x:Key="LOCATLauncherCantLocate">Der Ordner für die folgende Instanz kann nicht gefunden werden:</sys:String>
-    <sys:String x:Key="LOCATLauncherRemovingInstance">Removing from Playnite</sys:String>
+    <sys:String x:Key="LOCATLauncherRemovingInstance">Entfernen aus Playnite</sys:String>
     <sys:String x:Key="LOCATLauncherRemovedInstance">Gelöschte Instanz</sys:String>
     <sys:String x:Key="LOCATLauncherDeletedFiles">und gelöschte Dateien</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallWrong">Beim Löschen des Ordners für die folgende Instanz ist etwas schiefgelaufen:</sys:String>
@@ -39,5 +39,5 @@
     <sys:String x:Key="LOCATLauncherNotInFolder">ATLauncher.exe im ausgewählten Ordner nicht gefunden, Einstellung wird nicht geändert</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCovers">Cover-Art in Hochformat umwandeln</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Verändert das Cover-Art so, dass es besser aussieht, wenn Playnite im Vollbildmodus verwendet wird</sys:String>
-    <sys:String x:Key="LOCATLauncherChangingCovers">Updating Cover Art</sys:String>
+    <sys:String x:Key="LOCATLauncherChangingCovers">Aktualisierung des Titelbildes</sys:String>
 </ResourceDictionary>
