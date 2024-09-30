@@ -496,15 +496,12 @@
                         {
                             try
                             {
-                                using (var stream = new FileStream(Path.Combine(instanceDir, "instance.png"), FileMode.Open))
+                                bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
+                                if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                                 {
-                                    bmp = new Bitmap(stream);
-                                    if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
-                                    {
-                                        ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
-                                    }
-                                    cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                                    ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                                 }
+                                cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
                                 //Image i = Image.FromFile(Path.Combine(instanceDir, "instance.png"));
                                 //using (var ms = new MemoryStream())
                                 //{
