@@ -295,9 +295,11 @@ namespace ATLauncherInstanceImporter
 
         public class ATLauncherUninstallController : UninstallController
         {
-            public ATLauncherUninstallController(Game game) : base(game)
+            string _dataPath;
+            public ATLauncherUninstallController(Game game, string dataPath) : base(game)
             {
                 Name = $"{ResourceProvider.GetString("LOCATLauncherUninstallName")} {game.Name}";
+                _dataPath = dataPath;
             }
 
             public override void Uninstall(UninstallActionArgs args)
@@ -312,6 +314,19 @@ namespace ATLauncherInstanceImporter
                 }
                 try
                 {
+                    var input = File.ReadAllText(Path.Combine(Game.InstallDirectory, "instance.json"));
+                    var template = new {uuid = string.Empty};
+                    var result = JsonConvert.DeserializeAnonymousType(input, template);
+                    if (result != null)
+                    {
+                        foreach (var file in Directory.EnumerateFiles(_dataPath))
+                        {
+                            if (file.Contains(result.uuid))
+                            {
+                                File.Delete(file);
+                            }
+                        }
+                    }
                     Directory.Delete(Game.InstallDirectory, true);
                     if (!Directory.Exists(Game.InstallDirectory))
                     {
@@ -338,7 +353,7 @@ namespace ATLauncherInstanceImporter
                 yield break;
             }
 
-            yield return new ATLauncherUninstallController(args.Game);
+            yield return new ATLauncherUninstallController(args.Game, GetPluginUserDataPath());
         }
 
         /// <summary>
@@ -388,6 +403,10 @@ namespace ATLauncherInstanceImporter
             if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png")))
             {
                 return Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png");
+            }
+            else if (File.Exists(Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_cover.png")))
+            {
+                return Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_cover.png");
             }
             var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
             return packImgs.Item2.Path;
