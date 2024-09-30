@@ -442,7 +442,9 @@
         }
 
         /// <summary>
-        /// Saves a duplicate of the local image to plugin data folder
+        /// Saves a duplicate of the local image to plugin data folder to prevent
+        /// Playnite from deleting the original when the user removes the game that
+        /// has the image as metadata
         /// </summary>
         /// <param name="uuid">UUID of the instance</param>
         /// <param name="dataPath">Plugin data path</param>
@@ -563,6 +565,7 @@
                                         encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
                                         encoder.Save(ms);
                                         bmp = new Bitmap(ms);
+                                        bmp.MakeTransparent();
                                     }
                                     ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                                     bmp.Dispose();
