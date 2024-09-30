@@ -114,7 +114,7 @@ namespace ATLauncherInstanceImporter
                 return dirs;
                 //return new List<string>(Directory.EnumerateDirectories(Path.Combine(settings.Settings.ATLauncherLoc, "Instances")));
             }
-            PlayniteApi.Notifications.Add(new NotificationMessage(Guid.NewGuid().ToString(), ResourceProvider.GetString("LOCATLauncherNotFound"), NotificationType.Error));
+            PlayniteApi.Notifications.Add(new NotificationMessage("ATLauncherNotFound", ResourceProvider.GetString("LOCATLauncherNotFound"), NotificationType.Error));
             logger.Warn("Playnite tried to get ATLauncher instances, but ATLauncher location is not set");
             return new List<string>();
 
