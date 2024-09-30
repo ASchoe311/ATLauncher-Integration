@@ -390,21 +390,7 @@ namespace ATLauncherInstanceImporter
                 return Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png");
             }
             var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
-            if (toPortrait && packImgs.Item2.HasContent)
-            {
-                string imgPath = Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png");
-                using (var ms = new MemoryStream(packImgs.Item2.Content))
-                {
-                    System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
-                    img.Save(imgPath, ImageFormat.Png);
-                }
-                //PlayniteApi.Database.AddFile(imgPath, game.Id);
-                return imgPath;
-            }
-            else
-            {
-                return packImgs.Item2.Path;
-            }
+            return packImgs.Item2.Path;
         }
 
         /// <summary>

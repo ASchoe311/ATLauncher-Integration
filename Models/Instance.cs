@@ -496,10 +496,12 @@
                         {
                             try
                             {
-                                bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
                                 if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                                 {
+                                    logger.Debug($"Portait cover for {instance.Launcher.Name ?? instance.Uuid} not found, creating");
+                                    bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
                                     ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                    bmp.Dispose();
                                 }
                                 cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
                                 //Image i = Image.FromFile(Path.Combine(instanceDir, "instance.png"));
@@ -510,7 +512,6 @@
                                 //    byte[] imgData = ms.ToArray();
                                 //    cover = new MetadataFile($"{instance.Uuid}_cover_resized", imgData);
                                 //}
-                                bmp.Dispose();
                             }
                             catch (Exception e)
                             {
