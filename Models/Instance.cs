@@ -440,6 +440,32 @@
         }
 
         /// <summary>
+        /// Saves a duplicate of the local image to plugin data folder
+        /// </summary>
+        /// <param name="uuid">UUID of the instance</param>
+        /// <param name="dataPath">Plugin data path</param>
+        /// <param name="imgPath">Path to original image</param>
+        /// <returns>Path to the new saved image</returns>
+        private static string SaveDuplicateImg(string uuid, string dataPath, string imgPath, bool resize, bool cover)
+        {
+            string savePath = string.Empty;
+            if (cover)
+            {
+                savePath = resize ? Path.Combine(dataPath, $"{uuid}_portrait_cover.png") : Path.Combine(dataPath, $"{uuid}_cover.png");
+            }
+            else
+            {
+                savePath = Path.Combine(dataPath, $"{uuid}_bg.png");
+            }
+            if (!File.Exists(savePath))
+            {
+                Image img = Image.FromFile(imgPath);
+                img.Save(savePath);
+            }
+            return savePath;
+        }
+
+        /// <summary>
         /// Gets the images (icon, cover, background) for an instance
         /// </summary>
         /// <param name="instance">The <c>Instance</c> to get images for</param>
@@ -450,16 +476,10 @@
         {
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
             MetadataFile cover = new MetadataFile();
+            MetadataFile background = new MetadataFile();
             Bitmap bmp;
-            if (resize)
-            {
-                cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimagerect.png"));
-            }
-            else
-            {
-                cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png"));
-            }
-            var background = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png"));
+            string defaultCover = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png");
+            string defaultCoverPortrait = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimagerect.png");
             switch (instance.PackSource())
             {
                 case SourceEnum.CurseForge:
@@ -483,6 +503,11 @@
                             cover = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
                         }
                         background = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
+                    }
+                    else
+                    {
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Modrinth:
@@ -528,14 +553,15 @@
                             catch (Exception e)
                             {
                                 logger.Error($"Failed to resize cover art for instance {instance.Launcher.Name}\n    Error: {e.Message}\n   Trace: {e.StackTrace}");
-                                cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+                                cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, true));
+                                //cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
                             }
                         }
                         else
                         {
-                            cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+                            cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, true));
                         }
-                        background = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, false));
                     }
                     break;
                 case SourceEnum.Technic:
@@ -559,6 +585,11 @@
                             cover = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
                         }
                         background = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
+                    }
+                    else
+                    {
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.ATLauncher:
@@ -587,12 +618,15 @@
                     catch (Exception e)
                     {
                         logger.Warn($"Failed to fetch cover for pack {instanceDir}, leaving as default");
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
                     cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"));
-                    background = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"));
+                    cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"), false, true));
+                    background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"), false, false));
                     break;
             }
             return Tuple.Create(icon, cover, background);
