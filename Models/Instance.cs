@@ -26,6 +26,9 @@
         Vanilla = 4
     }
 
+    /// <summary>
+    /// Partial for <c>Instance</c> containing JsonProperty definitions
+    /// </summary>
     public partial class Instance
     {
         private static readonly ILogger logger = LogManager.GetLogger();
