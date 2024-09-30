@@ -198,6 +198,7 @@ namespace ATLauncherInstanceImporter
                     PlayniteApi.Dialogs.ShowErrorMessage(errMsg, ResourceProvider.GetString("LOCATLauncherImportError"));
                     if (settings.Settings.AutoIgnoreInstances)
                     {
+                        //Pass back to foreground thread
                         Application.Current.Dispatcher.Invoke((Action)delegate
                         {
                             settings.Settings.InstanceIgnoreList.Add(dir);
@@ -212,30 +213,52 @@ namespace ATLauncherInstanceImporter
         }
 
         /// <summary>
-        /// Removes old play actions and updates instance descriptions with new data on first application start with new plugin version
+        /// Asynchronously removes old play actions and updates instance descriptions with new data on first application start with new plugin version
         /// </summary>
         /// <param name="args"></param>
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
         {
+            // Ensure image cache directory exists
             if (!Directory.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache")))
             {
                 Directory.CreateDirectory(Path.Combine(GetPluginUserDataPath(), "ImageCache"));
             }
-            if (settings.Settings.PluginVersion != vNum)
+
+            // Only run on first install of new plugin version
+            if (true || settings.Settings.PluginVersion != vNum)
             {
                 logger.Info("Detected first run of new plugin version, removing old actions and updating descriptions");
-                PlayniteApi.Database.Games.BeginBufferUpdate();
-                foreach (var game in PlayniteApi.Database.Games)
+                AsyncFRU();
+                settings.Settings.PluginVersion = vNum;
+                SavePluginSettings(settings.Settings);
+                
+            }
+            base.OnApplicationStarted(args);
+        }
+
+        /// <summary>
+        /// Async started for first run update
+        /// </summary>
+        private async void AsyncFRU()
+        {
+            await Task.Run(() => FRU());
+        }
+
+        /// <summary>
+        /// Handles removal of old play actions and updating of descriptions
+        /// </summary>
+        private void FRU()
+        {
+            PlayniteApi.Database.Games.BeginBufferUpdate();
+            foreach (var game in PlayniteApi.Database.Games)
+            {
+                if (game.PluginId != Id)
                 {
-                    if (game.PluginId != Id)
-                    {
-                        continue;
-                    }
-                    List<GameAction> actions = new List<GameAction>();
-                    if (game.GameActions == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
+                List<GameAction> actions = new List<GameAction>();
+                if (game.GameActions != null)
+                {
                     foreach (var action in game.GameActions)
                     {
                         if (action.IsPlayAction)
@@ -243,20 +266,16 @@ namespace ATLauncherInstanceImporter
                             actions.Add(action);
                         }
                     }
-                    foreach (var action in actions)
-                    {
-                        game.GameActions.Remove(action);
-                    }
-                    var inst = GetInstance(game.InstallDirectory);
-                    game.Description = ATLauncherMetadataProvider.GenerateInstanceDescription(inst);
-                    PlayniteApi.Database.Games.Update(game);
                 }
-                PlayniteApi.Database.Games.EndBufferUpdate();
-                settings.Settings.PluginVersion = vNum;
-                SavePluginSettings(settings.Settings);
-                
+                foreach (var action in actions)
+                {
+                    game.GameActions.Remove(action);
+                }
+                var inst = GetInstance(game.InstallDirectory);                
+                game.Description = ATLauncherMetadataProvider.GenerateInstanceDescription(inst);
+                PlayniteApi.Database.Games.Update(game);
             }
-            base.OnApplicationStarted(args);
+            PlayniteApi.Database.Games.EndBufferUpdate();
         }
 
         public override LibraryMetadataProvider GetMetadataDownloader()
@@ -318,9 +337,12 @@ namespace ATLauncherInstanceImporter
                 }
                 try
                 {
+                    // Get uuid of instance
                     var input = File.ReadAllText(Path.Combine(Game.InstallDirectory, "instance.json"));
                     var template = new {uuid = string.Empty};
                     var result = JsonConvert.DeserializeAnonymousType(input, template);
+
+                    // Use uuid to delete any cached cover images
                     if (result != null)
                     {
                         foreach (var file in Directory.EnumerateFiles(Path.Combine(_dataPath, "ImageCache")))
@@ -331,6 +353,8 @@ namespace ATLauncherInstanceImporter
                             }
                         }
                     }
+
+                    // Delete instance folder
                     Directory.Delete(Game.InstallDirectory, true);
                     if (!Directory.Exists(Game.InstallDirectory))
                     {
@@ -361,14 +385,9 @@ namespace ATLauncherInstanceImporter
         }
 
         /// <summary>
-        /// Resizes the cover images on demand without blocking UI thread
+        /// Updates cover images for ATLauncher instances and displays a progress bar
         /// </summary>
-        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        //public async void ResizeCoversAsync(bool toPortrait)
-        //{
-        //    await Task.Run(() => ResizeCovers(toPortrait));
-        //}
-
+        /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
         public void ResizeCoversProgress(bool toPortrait)
         {
             List<Game> instances = new List<Game>();
@@ -382,6 +401,8 @@ namespace ATLauncherInstanceImporter
             logger.Debug($"changing {instances.Count} instance covers");
             GlobalProgressOptions gpo = new GlobalProgressOptions(ResourceProvider.GetString("LOCATLauncherChangingCovers"), false);
             gpo.IsIndeterminate = false;
+
+            // Change covers with progress dialog
             PlayniteApi.Dialogs.ActivateGlobalProgress((activateGlobalProgress) =>
             {
                 activateGlobalProgress.ProgressMaxValue = instances.Count;
@@ -400,10 +421,17 @@ namespace ATLauncherInstanceImporter
             }, gpo);
         }
 
+        /// <summary>
+        /// Gets the new cover for the instance
+        /// </summary>
+        /// <param name="g"><c>Game</c> object representing an ATLauncher instance</param>
+        /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
+        /// <returns>A string containing the path to the new cover image</returns>
         private string ResizeCover(Game g,  bool toPortrait)
         {
             logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(g.InstallDirectory);
+            // Try to get the desired cover from the image cache
             if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
             {
                 return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png");
@@ -412,9 +440,20 @@ namespace ATLauncherInstanceImporter
             {
                 return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png");
             }
+
+            // Generate new cached cover
             var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
             return packImgs.Item2.Path;
         }
+
+        /// <summary>
+        /// Resizes the cover images on demand without blocking UI thread
+        /// </summary>
+        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
+        //public async void ResizeCoversAsync(bool toPortrait)
+        //{
+        //    await Task.Run(() => ResizeCovers(toPortrait));
+        //}
 
         /// <summary>
         /// Changes cover images for instances between standard and portrait mode

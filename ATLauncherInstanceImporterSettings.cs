@@ -53,6 +53,9 @@ namespace ATLauncherInstanceImporter
 
         private ILogger logger = LogManager.GetLogger();
 
+        /// <summary>
+        /// Adds a selected folder to the ignore list
+        /// </summary>
         [DontSerialize]
         public RelayCommand AddIgnoreCommand
         {
@@ -66,6 +69,9 @@ namespace ATLauncherInstanceImporter
             });
         }
 
+        /// <summary>
+        /// Removes the selected ignore list member
+        /// </summary>
         [DontSerialize]
         public RelayCommand<string> RemoveIgnoreCommand
         {
@@ -78,6 +84,10 @@ namespace ATLauncherInstanceImporter
             });
         }
 
+        /// <summary>
+        /// Tries to get the path to ATLauncher install folder from the registry
+        /// </summary>
+        /// <returns>A <c>String</c> containing either the path to ATLauncher or string.Empty</returns>
         private string TryGetATLauncherPath()
         {
             foreach (var user in Registry.Users.GetSubKeyNames())
@@ -156,7 +166,7 @@ namespace ATLauncherInstanceImporter
             // List of errors is presented to user if verification fails.
             errors = new List<string>();
 
-            if (File.Exists(Settings.ATLauncherLoc + "\\ATLauncher.exe") || Settings.ATLauncherLoc == string.Empty)
+            if (File.Exists(Path.Combine(Settings.ATLauncherLoc, "ATLauncher.exe")) || Settings.ATLauncherLoc == string.Empty)
             {
                 return true;
             }

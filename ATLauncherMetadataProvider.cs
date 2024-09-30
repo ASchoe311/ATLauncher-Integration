@@ -47,6 +47,11 @@ namespace ATLauncherInstanceImporter
             return metaData;
         }
 
+        /// <summary>
+        /// Generates the description text for an instance
+        /// </summary>
+        /// <param name="instance"><c>Instance</c> object to generate description for</param>
+        /// <returns>String containing instance description</returns>
         public static string GenerateInstanceDescription(Models.Instance instance)
         {
             //logger.Info($"Generating description for instance {instance.Launcher.Name}");
@@ -114,6 +119,10 @@ namespace ATLauncherInstanceImporter
             return description;
         }
 
+        /// <summary>
+        /// Gets the current operating system as a MetadataNameProperty to pass as Platform metadata
+        /// </summary>
+        /// <returns>MetadataNameProperty for current operating system</returns>
         public static MetadataNameProperty GetOS()
         {
             int platform = (int)Environment.OSVersion.Platform;
