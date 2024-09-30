@@ -499,6 +499,18 @@
                                 if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                                 {
                                     logger.Debug($"Portait cover for {instance.Launcher.Name ?? instance.Uuid} not found, creating");
+
+                                    //using (var ms = new MemoryStream())
+                                    //{
+                                    //    FileStream fs = new FileStream(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), FileMode.Open, FileAccess.Read);
+                                    //    fs.CopyTo(ms);
+                                    //    fs.Dispose();
+                                    //    ms.Seek(0, SeekOrigin.Begin);
+                                    //    bmp = new Bitmap(ms);
+                                    //    ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                    //    bmp.Dispose();
+                                    //}
+
                                     bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
                                     ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                                     bmp.Dispose();
