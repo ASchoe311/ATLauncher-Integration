@@ -26,7 +26,7 @@ namespace ATLauncherInstanceImporter
         {
             Models.Instance instance = _plugin.GetInstance(game.InstallDirectory);
             //logger.Debug(Playnite.SDK.Data.Serialization.ToJson(instance));
-            Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, _resizeCovers);
+            Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, _resizeCovers, _plugin.GetPluginUserDataPath());
             var metaData = new GameMetadata()
             {
                 Description = GenerateInstanceDescription(instance),

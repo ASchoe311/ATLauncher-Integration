@@ -17,6 +17,9 @@ using Playnite.SDK.Events;
 using System.Reflection;
 using System.Windows;
 using System.Drawing.Imaging;
+using System.Threading;
+using System.Windows.Threading;
+using ATLauncherInstanceImporter.Models;
 
 namespace ATLauncherInstanceImporter
 {
@@ -143,11 +146,11 @@ namespace ATLauncherInstanceImporter
             List<GameMetadata> games = new List<GameMetadata>();
             foreach (var dir in GetInstanceDirs())
             {
-                logger.Info($"Discovered instance folder\"{dir}\", trying to add to library");
+                logger.Debug($"Discovered instance folder\"{dir}\", trying to add to library");
                 try
                 {
                     Models.Instance instance = GetInstance(dir);
-                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.ResizeCovers);
+                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.ResizeCovers, GetPluginUserDataPath());
                     if (settings.Settings.AddMetadataOnImport)
                     {
                         games.Add(new GameMetadata()
@@ -199,6 +202,7 @@ namespace ATLauncherInstanceImporter
                         {
                             settings.Settings.InstanceIgnoreList.Add(dir);
                             SavePluginSettings(settings.Settings);
+                            //PlayniteApi.MainView.OpenPluginSettings(Id);
                         });
                     }
                     continue;
@@ -346,6 +350,63 @@ namespace ATLauncherInstanceImporter
             await Task.Run(() => ResizeCovers(toPortrait));
         }
 
+        public void ResizeCoversProgress(bool toPortrait)
+        {
+            List<Game> instances = new List<Game>();
+            foreach (var game in PlayniteApi.Database.Games)
+            {
+                if (game.PluginId == Id)
+                {
+                    instances.Add(game);
+                }
+            }
+            logger.Debug($"changing {instances.Count} instance covers");
+            GlobalProgressOptions gpo = new GlobalProgressOptions("Updating Instance Cover Art", false);
+            gpo.IsIndeterminate = false;
+            PlayniteApi.Dialogs.ActivateGlobalProgress((activateGlobalProgress) =>
+            {
+                activateGlobalProgress.ProgressMaxValue = instances.Count;
+                activateGlobalProgress.CurrentProgressValue = -1;
+                PlayniteApi.Database.Games.BeginBufferUpdate();
+                foreach(var i in instances)
+                {
+                    gpo.Text = i.Name;
+                    activateGlobalProgress.CurrentProgressValue += 1;
+                    string imgPath = ResizeCover(i, toPortrait);
+                    i.CoverImage = imgPath;
+                    PlayniteApi.Database.Games.Update(i);
+                    //Thread.Sleep(250);
+                }
+                PlayniteApi.Database.Games.EndBufferUpdate();
+            }, gpo);
+        }
+
+        private string ResizeCover(Game g,  bool toPortrait)
+        {
+            logger.Debug("Resizing cover for " + g.Name);
+            var instance = GetInstance(g.InstallDirectory);
+            if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png")))
+            {
+                return Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png");
+            }
+            var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
+            if (toPortrait && packImgs.Item2.HasContent)
+            {
+                string imgPath = Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png");
+                using (var ms = new MemoryStream(packImgs.Item2.Content))
+                {
+                    System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+                    img.Save(imgPath, ImageFormat.Png);
+                }
+                //PlayniteApi.Database.AddFile(imgPath, game.Id);
+                return imgPath;
+            }
+            else
+            {
+                return packImgs.Item2.Path;
+            }
+        }
+
         /// <summary>
         /// Changes cover images for instances between standard and portrait mode
         /// </summary>
@@ -359,28 +420,11 @@ namespace ATLauncherInstanceImporter
                 {
                     continue;
                 }
-                logger.Debug($"Changing cover for {game.Name}");
-                var instance = GetInstance(game.InstallDirectory);
-                //logger.Debug(instance.PackSource().ToString());
-                var packImgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, toPortrait);
-                //logger.Debug(PlayniteApi.Database.GetFileStoragePath(game.Id));
-                if (toPortrait && packImgs.Item2.HasContent)
-                {
-                    string imgPath = Path.Combine(GetPluginUserDataPath(), $"{game.Id}_cover.png");
-                    using (var ms = new MemoryStream(packImgs.Item2.Content))
-                    {
-                        System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
-                        img.Save(imgPath, ImageFormat.Png);
-                    }
-                    //PlayniteApi.Database.AddFile(imgPath, game.Id);
-                    game.CoverImage = imgPath;
-                }
-                else
-                {
-                    game.CoverImage = packImgs.Item2.Path;
-                }
+                //logger.Debug($"Changing cover for {game.Name}");
+                string imgPath = ResizeCover(game, toPortrait);
+                game.CoverImage = imgPath;
                 PlayniteApi.Database.Games.Update(game);
-                logger.Debug($"Successfully changed cover for {game.Name}");
+                //logger.Debug($"Successfully changed cover for {game.Name}");
             }
             PlayniteApi.Database.Games.EndBufferUpdate();
         }

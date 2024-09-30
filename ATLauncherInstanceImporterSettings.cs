@@ -143,7 +143,8 @@ namespace ATLauncherInstanceImporter
             }
             if (Settings.ResizeCovers != editingClone.ResizeCovers)
             {
-                plugin.ResizeCoversAsync(Settings.ResizeCovers);
+                //plugin.ResizeCoversAsync(Settings.ResizeCovers);
+                plugin.ResizeCoversProgress(Settings.ResizeCovers);
             }
         }
 
