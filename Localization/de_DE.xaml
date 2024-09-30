@@ -16,11 +16,11 @@
     <sys:String x:Key="LOCATLauncherInvalidInstall">Der Pfad zur Launcher-Installation ist ungültig</sys:String>
     <sys:String x:Key="LOCATLauncherPluginError">ATLauncher Integrations-Plugin Fehler</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallName">Deinstallation (Instanzordner löschen)</sys:String>
-    <sys:String x:Key="LOCATLauncherCantLocate">The folder for the following instance cannot be found:</sys:String>
+    <sys:String x:Key="LOCATLauncherCantLocate">Der Ordner für die folgende Instanz kann nicht gefunden werden:</sys:String>
     <sys:String x:Key="LOCATLauncherRemovingInstance">Removing from Playnite</sys:String>
     <sys:String x:Key="LOCATLauncherRemovedInstance">Gelöschte Instanz</sys:String>
     <sys:String x:Key="LOCATLauncherDeletedFiles">und gelöschte Dateien</sys:String>
-    <sys:String x:Key="LOCATLauncherUninstallWrong">When deleting the folder for the following instance, something went wrong:</sys:String>
+    <sys:String x:Key="LOCATLauncherUninstallWrong">Beim Löschen des Ordners für die folgende Instanz ist etwas schiefgelaufen:</sys:String>
     <sys:String x:Key="LOCATLauncherUninstallerError">ATLauncher Integration Instanz-deinstallationsFehler</sys:String>
     <sys:String x:Key="LOCATLauncherMinecraftVersion">Minecraft Version</sys:String>
     <sys:String x:Key="LOCATLauncherVanillaMinecraft">Vanilla Minecraft</sys:String>
@@ -37,6 +37,6 @@
     <sys:String x:Key="LOCATLauncherModpackSource">Modpack-Quelle</sys:String>
     <sys:String x:Key="LOCATLauncherModpackWiki">Modpack-Wiki</sys:String>
     <sys:String x:Key="LOCATLauncherNotInFolder">ATLauncher.exe im ausgewählten Ordner nicht gefunden, Einstellung wird nicht geändert</sys:String>
-    <sys:String x:Key="LOCATLauncherResizeCovers">Reshape instance cover art to portrait</sys:String>
-    <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Alters cover art so that it looks better when using Playnite in fullscreen mode</sys:String>
+    <sys:String x:Key="LOCATLauncherResizeCovers">Cover-Art in Hochformat umwandeln</sys:String>
+    <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Verändert das Cover-Art so, dass es besser aussieht, wenn Playnite im Vollbildmodus verwendet wird</sys:String>
 </ResourceDictionary>
