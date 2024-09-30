@@ -380,7 +380,7 @@ namespace ATLauncherInstanceImporter
                 }
             }
             logger.Debug($"changing {instances.Count} instance covers");
-            GlobalProgressOptions gpo = new GlobalProgressOptions("Updating Instance Cover Art", false);
+            GlobalProgressOptions gpo = new GlobalProgressOptions(ResourceProvider.GetString("LOCATLauncherChangingCovers"), false);
             gpo.IsIndeterminate = false;
             PlayniteApi.Dialogs.ActivateGlobalProgress((activateGlobalProgress) =>
             {
@@ -394,7 +394,7 @@ namespace ATLauncherInstanceImporter
                     string imgPath = ResizeCover(i, toPortrait);
                     i.CoverImage = imgPath;
                     PlayniteApi.Database.Games.Update(i);
-                    //Thread.Sleep(250);
+                    //Thread.Sleep(2000);
                 }
                 PlayniteApi.Database.Games.EndBufferUpdate();
             }, gpo);
