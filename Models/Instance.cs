@@ -29,6 +29,10 @@
     public partial class Instance
     {
         private static readonly ILogger logger = LogManager.GetLogger();
+
+        [JsonProperty("uuid", NullValueHandling = NullValueHandling.Ignore)]
+        public string Uuid { get; set; }
+
         [JsonProperty("launcher", NullValueHandling = NullValueHandling.Ignore)]
         public Launcher Launcher { get; set; }
 
@@ -37,7 +41,184 @@
 
         [JsonProperty("releaseTime", NullValueHandling = NullValueHandling.Ignore)]
         public DateTimeOffset? ReleaseTime { get; set; }
+    }
 
+    public partial class Launcher
+    {
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [JsonProperty("pack", NullValueHandling = NullValueHandling.Ignore)]
+        public string Pack { get; set; }
+
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        public string Description { get; set; }
+
+        [JsonProperty("loaderVersion", NullValueHandling = NullValueHandling.Ignore)]
+        public LoaderVersion LoaderVersion { get; set; }
+
+        [JsonProperty("curseForgeProject", NullValueHandling = NullValueHandling.Ignore)]
+        public CurseForgeProject CurseForgeProject { get; set; }
+
+        [JsonProperty("modrinthProject", NullValueHandling = NullValueHandling.Ignore)]
+        public ModrinthProject ModrinthProject { get; set; }
+
+        [JsonProperty("technicModpack", NullValueHandling = NullValueHandling.Ignore)]
+        public TechnicModpack TechnicModpack { get; set; }
+
+        [JsonProperty("mods", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Mod> Mods { get; set; }
+
+        [JsonProperty("vanillaInstance", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsVanilla { get; set; }
+    }
+
+    public partial class LoaderVersion
+    {
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+        public string Type { get; set; }
+    }
+
+    public partial class CurseForgeProject
+    {
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [JsonProperty("authors", NullValueHandling = NullValueHandling.Ignore)]
+        public List<Author> Authors { get; set; }
+
+        [JsonProperty("summary", NullValueHandling = NullValueHandling.Ignore)]
+        public string Summary { get; set; }
+
+        [JsonProperty("dateReleased", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTimeOffset? DateReleased { get; set; }
+
+        [JsonProperty("links", NullValueHandling = NullValueHandling.Ignore)]
+        public Links Links { get; set; }
+
+        [JsonProperty("logo", NullValueHandling = NullValueHandling.Ignore)]
+        public Logo Logo { get; set; }
+    }
+
+    public partial class Author
+    {
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
+    }
+
+    public partial class Links
+    {
+        [JsonProperty("websiteUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string WebsiteUrl { get; set; }
+
+        [JsonProperty("wikiUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string WikiUrl { get; set; }
+
+        [JsonProperty("sourceUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string SourceUrl { get; set; }
+    }
+
+    public partial class Logo
+    {
+        [JsonProperty("thumbnailUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string ThumbnailUrl { get; set; }
+
+        [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    }
+
+    public partial class ModrinthProject
+    {
+        [JsonProperty("slug", NullValueHandling = NullValueHandling.Ignore)]
+        public string Slug { get; set; }
+
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        public string Description { get; set; }
+
+        [JsonProperty("published", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTimeOffset? DateReleased { get; set; }
+
+        [JsonProperty("icon_url", NullValueHandling = NullValueHandling.Ignore)]
+        public string IconUrl { get; set; }
+
+        [JsonProperty("source_url", NullValueHandling = NullValueHandling.Ignore)]
+        public string SourceUrl { get; set; }
+
+        [JsonProperty("wiki_url", NullValueHandling = NullValueHandling.Ignore)]
+        public string WikiUrl { get; set; }
+    }
+
+    public partial class TechnicModpack
+    {
+        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
+        public string Author { get; set; }
+
+        [JsonProperty("platformUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string PackUrl { get; set; }
+
+        [JsonProperty("icon", NullValueHandling = NullValueHandling.Ignore)]
+        public Icon Icon { get; set; }
+
+        [JsonProperty("logo", NullValueHandling = NullValueHandling.Ignore)]
+        public Logo Logo { get; set; }
+    }
+
+    public partial class Icon
+    {
+        [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    }
+
+    public partial class Mod
+    {
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
+        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        public string Description { get; set; }
+
+        [JsonProperty("curseForgeProject", NullValueHandling = NullValueHandling.Ignore)]
+        public CurseForgeProject CurseForgeProject { get; set; }
+
+        [JsonProperty("modrinthProject", NullValueHandling = NullValueHandling.Ignore)]
+        public ModrinthProject ModrinthProject { get; set; }
+    }
+
+    public partial class Instance
+    {
+        //private static JsonSerializerSettings settings = new JsonSerializerSettings { Error = (se, ev) => { ev.ErrorContext.Handled = true; } };
+        public static Instance FromJson(string json) => JsonConvert.DeserializeObject<Instance>(json, Models.Converter.Settings);
+    }
+
+    public static class Serialize
+    {
+        public static string ToJson(this Instance self) => JsonConvert.SerializeObject(self);
+    }
+    internal static class Converter
+    {
+        private static readonly ILogger logger = LogManager.GetLogger();
+        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        {
+            Error = delegate(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+            {
+                logger.Warn($"Encountered an error deserializing property {args.ErrorContext.Member} of {args.ErrorContext.OriginalObject}:\n {args.ErrorContext.Error.Message} {args.ErrorContext.Error.InnerException}\n" + 
+                    "Attempting to set property to null and continue");
+                args.ErrorContext.Handled = true;
+            },
+            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+            DateParseHandling = DateParseHandling.None,
+            Converters =
+            {
+                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+            },
+        };
+    }
+
+    /// <summary>
+    /// Parital for <c>Instance</c> containing useful methods
+    /// </summary>
+    public partial class Instance
+    {
         /// <summary>
         /// Gets the source of the ATLauncher instance
         /// </summary>
@@ -244,6 +425,8 @@
                 WebClient client = new WebClient();
                 Stream stream = client.OpenRead(imageUrl);
                 bmp = new Bitmap(stream);
+                stream.Close();
+                stream.Dispose();
                 return true;
             }
             catch
@@ -260,7 +443,7 @@
         /// <param name="instanceDir">The path to the instance folder</param>
         /// <param name="resize">Determines whether or not the cover images should be resized to portrait</param>
         /// <returns>A Tuple of MetadataFiles representing icon, cover, and background</returns>
-        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize)
+        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize, string pluginDataPath)
         {
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
             MetadataFile cover = new MetadataFile();
@@ -285,12 +468,12 @@
                     {
                         if (resize && TrySaveImage(instance.Launcher.CurseForgeProject.Logo.Url, out bmp))
                         {
-                            using (var ms = new MemoryStream())
+                            if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
-                                byte[] imgData = ms.ToArray();
-                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                             }
+                            cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                            bmp.Dispose();
                         }
                         else
                         {
@@ -308,14 +491,32 @@
                     {
                         if (resize)
                         {
-                            bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
-                            using (var ms = new MemoryStream())
+                            try
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
-                                byte[] imgData = ms.ToArray();
-                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                                using (var stream = new FileStream(Path.Combine(instanceDir, "instance.png"), FileMode.Open))
+                                {
+                                    bmp = new Bitmap(stream);
+                                    if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
+                                    {
+                                        ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                    }
+                                    cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                                }
+                                //Image i = Image.FromFile(Path.Combine(instanceDir, "instance.png"));
+                                //using (var ms = new MemoryStream())
+                                //{
+                                //    bmp = new Bitmap(i);
+                                //    ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
+                                //    byte[] imgData = ms.ToArray();
+                                //    cover = new MetadataFile($"{instance.Uuid}_cover_resized", imgData);
+                                //}
+                                bmp.Dispose();
                             }
-
+                            catch (Exception e)
+                            {
+                                logger.Error($"Failed to resize cover art for instance {instance.Launcher.Name}\n    Error: {e.Message}\n   Trace: {e.StackTrace}");
+                                cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
+                            }
                         }
                         else
                         {
@@ -333,12 +534,12 @@
                     {
                         if (resize && TrySaveImage(instance.Launcher.TechnicModpack.Logo.Url, out bmp))
                         {
-                            using (var ms = new MemoryStream())
+                            if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
-                                byte[] imgData = ms.ToArray();
-                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                             }
+                            cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                            bmp.Dispose();
                         }
                         else
                         {
@@ -357,12 +558,12 @@
                         var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
                         if (resize && TrySaveImage($"https://cdn.atlcdn.net/images/packs/{packSlug}.png", out bmp))
                         {
-                            using (var ms = new MemoryStream())
+                            if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
-                                byte[] imgData = ms.ToArray();
-                                cover = new MetadataFile($"{instance.Launcher.Name}_cover_resized", imgData);
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                             }
+                            cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                            bmp.Dispose();
                         }
                         else
                         {
@@ -372,8 +573,8 @@
                     }
                     catch (Exception e)
                     {
-                        logger.Warn($"Failed to fetch cover for pack {instanceDir}, setting to default");
-                    }                    
+                        logger.Warn($"Failed to fetch cover for pack {instanceDir}, leaving as default");
+                    }
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
@@ -437,175 +638,5 @@
         }
     }
 
-    public partial class Launcher
-    {
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
-
-        [JsonProperty("pack", NullValueHandling = NullValueHandling.Ignore)]
-        public string Pack { get; set; }
-
-        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
-        public string Description { get; set; }
-
-        [JsonProperty("loaderVersion", NullValueHandling = NullValueHandling.Ignore)]
-        public LoaderVersion LoaderVersion { get; set; }
-
-        [JsonProperty("curseForgeProject", NullValueHandling = NullValueHandling.Ignore)]
-        public CurseForgeProject CurseForgeProject { get; set; }
-
-        [JsonProperty("modrinthProject", NullValueHandling = NullValueHandling.Ignore)]
-        public ModrinthProject ModrinthProject { get; set; }
-
-        [JsonProperty("technicModpack", NullValueHandling = NullValueHandling.Ignore)]
-        public TechnicModpack TechnicModpack { get; set; }
-
-        [JsonProperty("mods", NullValueHandling = NullValueHandling.Ignore)]
-        public List<Mod> Mods { get; set; }
-
-        [JsonProperty("vanillaInstance", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? IsVanilla { get; set; }
-    }
-
-    public partial class LoaderVersion
-    {
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
-        public string Type { get; set; }
-    }
-
-    public partial class CurseForgeProject
-    {
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
-
-        [JsonProperty("authors", NullValueHandling = NullValueHandling.Ignore)]
-        public List<Author> Authors { get; set; }
-
-        [JsonProperty("summary", NullValueHandling = NullValueHandling.Ignore)]
-        public string Summary { get; set; }
-
-        [JsonProperty("dateReleased", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTimeOffset? DateReleased { get; set; }
-
-        [JsonProperty("links", NullValueHandling = NullValueHandling.Ignore)]
-        public Links Links { get; set; }
-
-        [JsonProperty("logo", NullValueHandling = NullValueHandling.Ignore)]
-        public Logo Logo { get; set; }
-    }
-
-    public partial class Author
-    {
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
-    }
-
-    public partial class Links
-    {
-        [JsonProperty("websiteUrl", NullValueHandling = NullValueHandling.Ignore)]
-        public string WebsiteUrl { get; set; }
-
-        [JsonProperty("wikiUrl", NullValueHandling = NullValueHandling.Ignore)]
-        public string WikiUrl { get; set; }
-
-        [JsonProperty("sourceUrl", NullValueHandling = NullValueHandling.Ignore)]
-        public string SourceUrl { get; set; }
-    }
-
-    public partial class Logo
-    {
-        [JsonProperty("thumbnailUrl", NullValueHandling = NullValueHandling.Ignore)]
-        public string ThumbnailUrl { get; set; }
-
-        [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
-        public string Url { get; set; }
-    }
-
-    public partial class ModrinthProject
-    {
-        [JsonProperty("slug", NullValueHandling = NullValueHandling.Ignore)]
-        public string Slug { get; set; }
-
-        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
-        public string Description { get; set; }
-
-        [JsonProperty("published", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTimeOffset? DateReleased { get; set; }
-
-        [JsonProperty("icon_url", NullValueHandling = NullValueHandling.Ignore)]
-        public string IconUrl { get; set; }
-
-        [JsonProperty("source_url", NullValueHandling = NullValueHandling.Ignore)]
-        public string SourceUrl { get; set; }
-
-        [JsonProperty("wiki_url", NullValueHandling = NullValueHandling.Ignore)]
-        public string WikiUrl { get; set; }
-    }
-
-    public partial class TechnicModpack
-    {
-        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
-        public string Author { get; set; }
-
-        [JsonProperty("platformUrl", NullValueHandling = NullValueHandling.Ignore)]
-        public string PackUrl { get; set; }
-
-        [JsonProperty("icon", NullValueHandling = NullValueHandling.Ignore)]
-        public Icon Icon { get; set; }
-
-        [JsonProperty("logo", NullValueHandling = NullValueHandling.Ignore)]
-        public Logo Logo { get; set; }
-    }
-
-    public partial class Icon
-    {
-        [JsonProperty("url", NullValueHandling = NullValueHandling.Ignore)]
-        public string Url { get; set; }
-    }
-
-    public partial class Mod
-    {
-        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set; }
-
-        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
-        public string Description { get; set; }
-
-        [JsonProperty("curseForgeProject", NullValueHandling = NullValueHandling.Ignore)]
-        public CurseForgeProject CurseForgeProject { get; set; }
-
-        [JsonProperty("modrinthProject", NullValueHandling = NullValueHandling.Ignore)]
-        public ModrinthProject ModrinthProject { get; set; }
-    }
-
-    public partial class Instance
-    {
-        //private static JsonSerializerSettings settings = new JsonSerializerSettings { Error = (se, ev) => { ev.ErrorContext.Handled = true; } };
-        public static Instance FromJson(string json) => JsonConvert.DeserializeObject<Instance>(json, Models.Converter.Settings);
-    }
-
-    public static class Serialize
-    {
-        public static string ToJson(this Instance self) => JsonConvert.SerializeObject(self);
-    }
-    internal static class Converter
-    {
-        private static readonly ILogger logger = LogManager.GetLogger();
-        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-        {
-            Error = delegate(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
-            {
-                logger.Warn($"Encountered an error deserializing property {args.ErrorContext.Member} of {args.ErrorContext.OriginalObject}:\n {args.ErrorContext.Error.Message} {args.ErrorContext.Error.InnerException}\n" + 
-                    "Attempting to set property to null and continue");
-                args.ErrorContext.Handled = true;
-            },
-            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-            DateParseHandling = DateParseHandling.None,
-            Converters =
-            {
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-            },
-        };
-    }
 
 }
