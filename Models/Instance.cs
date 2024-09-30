@@ -615,7 +615,7 @@
                 g.SmoothingMode = SmoothingMode.HighQuality;
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.CompositingQuality = CompositingQuality.HighQuality;
-                g.Clear(System.Drawing.Color.Black);
+                g.Clear(System.Drawing.Color.FromArgb(0,0,0,0));
                 g.DrawImage(b, 0, ((nHeight / 2) - (newHeight / 2)), nWidth, newHeight);
             }
             return result;
