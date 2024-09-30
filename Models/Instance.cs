@@ -16,6 +16,8 @@
     using Playnite;
     using Playnite.SDK;
     using Playnite.SDK.Models;
+    using System.Windows.Media.Imaging;
+    using System.Windows;
 
     public enum SourceEnum
     {
@@ -449,6 +451,18 @@
         private static string SaveDuplicateImg(string uuid, string dataPath, string imgPath, bool resize, bool cover)
         {
             string savePath = string.Empty;
+            BitmapImage bitmapImage = new BitmapImage();
+            using (var fs = new FileStream(imgPath, FileMode.Open, FileAccess.Read))
+            {
+                fs.Seek(0, SeekOrigin.Begin);
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = fs;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();
+            }
+           
             if (cover)
             {
                 savePath = resize ? Path.Combine(dataPath, $"{uuid}_portrait_cover.png") : Path.Combine(dataPath, $"{uuid}_cover.png");
@@ -459,8 +473,15 @@
             }
             if (!File.Exists(savePath))
             {
-                Image img = Image.FromFile(imgPath);
-                img.Save(savePath);
+                using (var ms = new MemoryStream())
+                {
+                    ms.Seek(0, SeekOrigin.Begin);
+                    PngBitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
+                    encoder.Save(ms);
+                    Image i = Image.FromStream(ms);
+                    i.Save(savePath);
+                }
             }
             return savePath;
         }
@@ -524,31 +545,28 @@
                                 if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
                                 {
                                     logger.Debug($"Portait cover for {instance.Launcher.Name ?? instance.Uuid} not found, creating");
-
-                                    //using (var ms = new MemoryStream())
-                                    //{
-                                    //    FileStream fs = new FileStream(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), FileMode.Open, FileAccess.Read);
-                                    //    fs.CopyTo(ms);
-                                    //    fs.Dispose();
-                                    //    ms.Seek(0, SeekOrigin.Begin);
-                                    //    bmp = new Bitmap(ms);
-                                    //    ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
-                                    //    bmp.Dispose();
-                                    //}
-
-                                    bmp = new Bitmap(Path.Combine(instanceDir, "instance.png"));
+                                    BitmapImage bitmapImage = new BitmapImage();
+                                    using (var fs = new FileStream(Path.Combine(instanceDir, "instance.png"), FileMode.Open, FileAccess.Read))
+                                    {
+                                        fs.Seek(0, SeekOrigin.Begin);
+                                        bitmapImage.BeginInit();
+                                        bitmapImage.StreamSource = fs;
+                                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                                        bitmapImage.EndInit();
+                                        bitmapImage.Freeze();
+                                    }
+                                    using (var ms = new MemoryStream())
+                                    {
+                                        BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+                                        encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
+                                        encoder.Save(ms);
+                                        bmp = new Bitmap(ms);
+                                    }
                                     ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                                     bmp.Dispose();
                                 }
                                 cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
-                                //Image i = Image.FromFile(Path.Combine(instanceDir, "instance.png"));
-                                //using (var ms = new MemoryStream())
-                                //{
-                                //    bmp = new Bitmap(i);
-                                //    ResizeBitmapWithPadding(bmp, 810, 1080).Save(ms, ImageFormat.Png);
-                                //    byte[] imgData = ms.ToArray();
-                                //    cover = new MetadataFile($"{instance.Uuid}_cover_resized", imgData);
-                                //}
                             }
                             catch (Exception e)
                             {
@@ -562,6 +580,11 @@
                             cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, true));
                         }
                         background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, false));
+                    }
+                    else
+                    {
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Technic:

@@ -217,6 +217,10 @@ namespace ATLauncherInstanceImporter
         /// <param name="args"></param>
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
         {
+            if (!Directory.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache")))
+            {
+                Directory.CreateDirectory(Path.Combine(GetPluginUserDataPath(), "ImageCache"));
+            }
             if (settings.Settings.PluginVersion != vNum)
             {
                 logger.Info("Detected first run of new plugin version, removing old actions and updating descriptions");
@@ -360,10 +364,10 @@ namespace ATLauncherInstanceImporter
         /// Resizes the cover images on demand without blocking UI thread
         /// </summary>
         /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        public async void ResizeCoversAsync(bool toPortrait)
-        {
-            await Task.Run(() => ResizeCovers(toPortrait));
-        }
+        //public async void ResizeCoversAsync(bool toPortrait)
+        //{
+        //    await Task.Run(() => ResizeCovers(toPortrait));
+        //}
 
         public void ResizeCoversProgress(bool toPortrait)
         {
@@ -416,23 +420,23 @@ namespace ATLauncherInstanceImporter
         /// Changes cover images for instances between standard and portrait mode
         /// </summary>
         /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        private void ResizeCovers(bool toPortrait)
-        {
-            PlayniteApi.Database.Games.BeginBufferUpdate();
-            foreach (var game in PlayniteApi.Database.Games)
-            {
-                if (game.PluginId != Id)
-                {
-                    continue;
-                }
-                //logger.Debug($"Changing cover for {game.Name}");
-                string imgPath = ResizeCover(game, toPortrait);
-                game.CoverImage = imgPath;
-                PlayniteApi.Database.Games.Update(game);
-                //logger.Debug($"Successfully changed cover for {game.Name}");
-            }
-            PlayniteApi.Database.Games.EndBufferUpdate();
-        }
+        //private void ResizeCovers(bool toPortrait)
+        //{
+        //    PlayniteApi.Database.Games.BeginBufferUpdate();
+        //    foreach (var game in PlayniteApi.Database.Games)
+        //    {
+        //        if (game.PluginId != Id)
+        //        {
+        //            continue;
+        //        }
+        //        //logger.Debug($"Changing cover for {game.Name}");
+        //        string imgPath = ResizeCover(game, toPortrait);
+        //        game.CoverImage = imgPath;
+        //        PlayniteApi.Database.Games.Update(game);
+        //        //logger.Debug($"Successfully changed cover for {game.Name}");
+        //    }
+        //    PlayniteApi.Database.Games.EndBufferUpdate();
+        //}
 
     }
 }
