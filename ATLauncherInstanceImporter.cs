@@ -323,7 +323,7 @@ namespace ATLauncherInstanceImporter
                     var result = JsonConvert.DeserializeAnonymousType(input, template);
                     if (result != null)
                     {
-                        foreach (var file in Directory.EnumerateFiles(_dataPath))
+                        foreach (var file in Directory.EnumerateFiles(Path.Combine(_dataPath, "ImageCache")))
                         {
                             if (file.Contains(result.uuid))
                             {
@@ -404,13 +404,13 @@ namespace ATLauncherInstanceImporter
         {
             logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(g.InstallDirectory);
-            if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png")))
+            if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
             {
-                return Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_portrait_cover.png");
+                return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png");
             }
-            else if (File.Exists(Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_cover.png")))
+            if (!toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png")))
             {
-                return Path.Combine(GetPluginUserDataPath(), $"{instance.Uuid}_cover.png");
+                return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png");
             }
             var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
             return packImgs.Item2.Path;

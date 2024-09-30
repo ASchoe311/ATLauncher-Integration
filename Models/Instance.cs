@@ -450,7 +450,7 @@
         /// <returns>Path to the new saved image</returns>
         private static string SaveDuplicateImg(string uuid, string dataPath, string imgPath, bool resize, bool cover)
         {
-            string savePath = string.Empty;
+            string savePath = dataPath;
             BitmapImage bitmapImage = new BitmapImage();
             using (var fs = new FileStream(imgPath, FileMode.Open, FileAccess.Read))
             {
@@ -465,11 +465,11 @@
            
             if (cover)
             {
-                savePath = resize ? Path.Combine(dataPath, $"{uuid}_portrait_cover.png") : Path.Combine(dataPath, $"{uuid}_cover.png");
+                savePath = resize ? Path.Combine(savePath, $"{uuid}_portrait_cover.png") : Path.Combine(savePath, $"{uuid}_cover.png");
             }
             else
             {
-                savePath = Path.Combine(dataPath, $"{uuid}_bg.png");
+                savePath = Path.Combine(savePath, $"{uuid}_bg.png");
             }
             if (!File.Exists(savePath))
             {
@@ -495,6 +495,7 @@
         /// <returns>A Tuple of MetadataFiles representing icon, cover, and background</returns>
         public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize, string pluginDataPath)
         {
+            string imgCache = Path.Combine(pluginDataPath, "ImageCache");
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
             MetadataFile cover = new MetadataFile();
             MetadataFile background = new MetadataFile();
@@ -512,11 +513,11 @@
                     {
                         if (resize && TrySaveImage(instance.Launcher.CurseForgeProject.Logo.Url, out bmp))
                         {
-                            if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
+                            if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                             }
-                            cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                            cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
                             bmp.Dispose();
                         }
                         else
@@ -527,8 +528,8 @@
                     }
                     else
                     {
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Modrinth:
@@ -542,7 +543,7 @@
                         {
                             try
                             {
-                                if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
+                                if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
                                 {
                                     logger.Debug($"Portait cover for {instance.Launcher.Name ?? instance.Uuid} not found, creating");
                                     BitmapImage bitmapImage = new BitmapImage();
@@ -563,28 +564,28 @@
                                         encoder.Save(ms);
                                         bmp = new Bitmap(ms);
                                     }
-                                    ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                    ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                                     bmp.Dispose();
                                 }
-                                cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                                cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
                             }
                             catch (Exception e)
                             {
                                 logger.Error($"Failed to resize cover art for instance {instance.Launcher.Name}\n    Error: {e.Message}\n   Trace: {e.StackTrace}");
-                                cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, true));
+                                cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(instanceDir, "instance.png"), false, true));
                                 //cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
                             }
                         }
                         else
                         {
-                            cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, true));
+                            cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(instanceDir, "instance.png"), false, true));
                         }
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(instanceDir, "instance.png"), false, false));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(instanceDir, "instance.png"), false, false));
                     }
                     else
                     {
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Technic:
@@ -596,11 +597,11 @@
                     {
                         if (resize && TrySaveImage(instance.Launcher.TechnicModpack.Logo.Url, out bmp))
                         {
-                            if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
+                            if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                             }
-                            cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                            cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
                             bmp.Dispose();
                         }
                         else
@@ -611,8 +612,8 @@
                     }
                     else
                     {
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.ATLauncher:
@@ -625,11 +626,11 @@
                         var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
                         if (resize && TrySaveImage($"https://cdn.atlcdn.net/images/packs/{packSlug}.png", out bmp))
                         {
-                            if (!File.Exists(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png")))
+                            if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
                             {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
+                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
                             }
-                            cover = new MetadataFile(Path.Combine(pluginDataPath, $"{instance.Uuid}_portrait_cover.png"));
+                            cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
                             bmp.Dispose();
                         }
                         else
@@ -641,15 +642,15 @@
                     catch (Exception e)
                     {
                         logger.Warn($"Failed to fetch cover for pack {instanceDir}, leaving as default");
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, defaultCover, false, false));
+                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
+                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
                     cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"));
-                    cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"), false, true));
-                    background = new MetadataFile(SaveDuplicateImg(instance.Uuid, pluginDataPath, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"), false, false));
+                    cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"), false, true));
+                    background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"), false, false));
                     break;
             }
             return Tuple.Create(icon, cover, background);
