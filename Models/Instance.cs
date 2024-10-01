@@ -561,7 +561,7 @@
                                     }
                                     using (var ms = new MemoryStream())
                                     {
-                                        BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+                                        PngBitmapEncoder encoder = new PngBitmapEncoder();
                                         encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
                                         encoder.Save(ms);
                                         bmp = new Bitmap(ms);
