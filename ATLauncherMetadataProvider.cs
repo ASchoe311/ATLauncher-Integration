@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace ATLauncherInstanceImporter
 {
@@ -47,6 +48,14 @@ namespace ATLauncherInstanceImporter
             return metaData;
         }
 
+        public static string FormatGivenDescription(string desc)
+        {
+            string pattern = @"\n";
+            string substitution = @"<br>";
+            Regex reg = new Regex(pattern, RegexOptions.Compiled);
+            return reg.Replace(desc, substitution);
+        }
+
         /// <summary>
         /// Generates the description text for an instance
         /// </summary>
@@ -66,7 +75,7 @@ namespace ATLauncherInstanceImporter
             }
             if (instance.Launcher.Description != null)
             {
-                description = $"<h2>{instance.Launcher.Description}</h2>";
+                description = $"<h2>{FormatGivenDescription(instance.Launcher.Description)}</h2>";
             }
             description += $"<h1>{ResourceProvider.GetString("LOCATLauncherMinecraftVersion")}: {instance.McVersion}</h1>";
             if (instance.Launcher.LoaderVersion != null && instance.Launcher.LoaderVersion.Type != null)
