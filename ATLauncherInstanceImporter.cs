@@ -225,7 +225,7 @@ namespace ATLauncherInstanceImporter
             }
 
             // Only run on first install of new plugin version
-            if (true || settings.Settings.PluginVersion != vNum)
+            if (settings.Settings.PluginVersion != vNum)
             {
                 logger.Info("Detected first run of new plugin version, removing old actions and updating descriptions");
                 AsyncFRU();
