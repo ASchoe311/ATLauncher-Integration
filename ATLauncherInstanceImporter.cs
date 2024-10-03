@@ -432,13 +432,13 @@ namespace ATLauncherInstanceImporter
             //logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(installDir);
             // Try to get the desired cover from the image cache
+            if ((!toPortrait || instance.PackSource() == SourceEnum.Vanilla) && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png")))
+            {
+                return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png");
+            }
             if (toPortrait && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
             {
                 return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_portrait_cover.png");
-            }
-            if (!toPortrait && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png")))
-            {
-                return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png");
             }
 
             // Generate new cached cover
