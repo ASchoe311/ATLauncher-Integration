@@ -445,6 +445,10 @@ namespace ATLauncherInstanceImporter
             return packImgs.Item2.Path;
         }
 
+        /// <summary>
+        /// Changes names for all instances based on provided token formatted string, shows a progress bar
+        /// </summary>
+        /// <param name="tokenString">The string containing the name format for instances</param>
         public void ChangeInstanceNames(string tokenString)
         {
             List<Game> instances = new List<Game>();
