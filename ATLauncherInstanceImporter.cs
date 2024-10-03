@@ -410,7 +410,6 @@ namespace ATLauncherInstanceImporter
                 PlayniteApi.Database.Games.BeginBufferUpdate();
                 foreach(var i in instances)
                 {
-                    gpo.Text = i.Name;
                     activateGlobalProgress.CurrentProgressValue += 1;
                     string imgPath = ResizeCover(i, toPortrait);
                     i.CoverImage = imgPath;
@@ -474,14 +473,13 @@ namespace ATLauncherInstanceImporter
                     Dictionary<string, string> tokens = new Dictionary<string, string>()
                     {
                         { "{instanceName}", instance.Launcher?.Name ?? string.Empty },
-                        { "{packName}", instance.Launcher.Pack },
+                        { "{packName}", instance.Launcher?.Pack ?? string.Empty },
                         { "{packVersion}", instance.Launcher?.Version ?? string.Empty },
-                        { "{mcVersion}", instance.McVersion },
-                        { "{modLoader}", instance.Launcher.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
+                        { "{mcVersion}", instance.McVersion ?? string.Empty },
+                        { "{modLoader}", instance.Launcher?.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
                     };
                     string fullRgx = string.Join("|", tokens.Keys.ToArray());
                     Regex TokenRegex = new Regex($"({string.Join("|", tokens.Keys.ToArray())})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    gpo.Text = inst.Name;
                     string newName = tokenString;
                     newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value]);
                     inst.Name = newName;
