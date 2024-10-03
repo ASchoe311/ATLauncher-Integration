@@ -411,7 +411,7 @@ namespace ATLauncherInstanceImporter
                 foreach(var i in instances)
                 {
                     activateGlobalProgress.CurrentProgressValue += 1;
-                    string imgPath = ResizeCover(i, toPortrait);
+                    string imgPath = ResizeCover(i.InstallDirectory, toPortrait);
                     i.CoverImage = imgPath;
                     PlayniteApi.Database.Games.Update(i);
                     //Thread.Sleep(2000);
@@ -426,10 +426,10 @@ namespace ATLauncherInstanceImporter
         /// <param name="g"><c>Game</c> object representing an ATLauncher instance</param>
         /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
         /// <returns>A string containing the path to the new cover image</returns>
-        private string ResizeCover(Game g,  bool toPortrait)
+        internal string ResizeCover(string installDir,  bool toPortrait, string dataPath = "")
         {
-            logger.Debug("Resizing cover for " + g.Name);
-            var instance = GetInstance(g.InstallDirectory);
+            //logger.Debug("Resizing cover for " + g.Name);
+            var instance = GetInstance(installDir);
             // Try to get the desired cover from the image cache
             if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
             {
@@ -441,7 +441,7 @@ namespace ATLauncherInstanceImporter
             }
 
             // Generate new cached cover
-            var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
+            var packImgs = Models.Instance.GetPackImages(instance, installDir, toPortrait, dataPath == "" ? GetPluginUserDataPath() : dataPath);
             return packImgs.Item2.Path;
         }
 
@@ -473,19 +473,7 @@ namespace ATLauncherInstanceImporter
                 foreach (var inst in instances)
                 {
                     activateGlobalProgress.CurrentProgressValue += 1;
-                    Instance instance = GetInstance(inst.InstallDirectory);
-                    Dictionary<string, string> tokens = new Dictionary<string, string>()
-                    {
-                        { "{instancename}", instance.Launcher?.Name ?? string.Empty },
-                        { "{packname}", instance.Launcher?.Pack ?? string.Empty },
-                        { "{packversion}", instance.Launcher?.Version ?? string.Empty },
-                        { "{mcversion}", instance.McVersion ?? string.Empty },
-                        { "{modloader}", instance.Launcher?.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
-                    };
-                    Regex TokenRegex = new Regex($"({string.Join("|", tokens.Keys.ToArray())})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    string newName = tokenString;
-                    newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value.ToLowerInvariant()]);
-                    inst.Name = newName;
+                    inst.Name = ChangeInstanceName(tokenString, inst.InstallDirectory);
                     PlayniteApi.Database.Games.Update(inst);
                     //Thread.Sleep(2000);
                 }
@@ -494,6 +482,23 @@ namespace ATLauncherInstanceImporter
         
         }
 
+
+        internal string ChangeInstanceName(string tokenString, string installDir)
+        {
+            Instance instance = GetInstance(installDir);
+            Dictionary<string, string> tokens = new Dictionary<string, string>()
+            {
+                { "{instancename}", instance.Launcher?.Name ?? string.Empty },
+                { "{packname}", instance.Launcher?.Pack ?? string.Empty },
+                { "{packversion}", instance.Launcher?.Version ?? string.Empty },
+                { "{mcversion}", instance.McVersion ?? string.Empty },
+                { "{modloader}", instance.Launcher?.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
+            };
+            Regex TokenRegex = new Regex($"({string.Join("|", tokens.Keys.ToArray())})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            string newName = tokenString;
+            newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value.ToLowerInvariant()]);
+            return newName;
+        }
         /// <summary>
         /// Resizes the cover images on demand without blocking UI thread
         /// </summary>
