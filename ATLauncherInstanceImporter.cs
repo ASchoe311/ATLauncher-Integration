@@ -151,11 +151,12 @@ namespace ATLauncherInstanceImporter
                 {
                     Models.Instance instance = GetInstance(dir);
                     Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.ResizeCovers, GetPluginUserDataPath());
+                    string instanceName = ChangeInstanceName(settings.Settings.NameFormat, dir);
                     if (settings.Settings.AddMetadataOnImport)
                     {
                         games.Add(new GameMetadata()
                         {
-                            Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                            Name = instanceName,
                             InstallDirectory = dir,
                             IsInstalled = true,
                             GameId = "atl-" + Path.GetFileName(dir).ToLower(),
@@ -177,7 +178,7 @@ namespace ATLauncherInstanceImporter
                     {
                         games.Add(new GameMetadata()
                         {
-                            Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                            Name = instanceName,
                             InstallDirectory = dir,
                             IsInstalled = true,
                             GameId = "atl-" + Path.GetFileName(dir).ToLower(),
