@@ -476,16 +476,15 @@ namespace ATLauncherInstanceImporter
                     Instance instance = GetInstance(inst.InstallDirectory);
                     Dictionary<string, string> tokens = new Dictionary<string, string>()
                     {
-                        { "{instanceName}", instance.Launcher?.Name ?? string.Empty },
-                        { "{packName}", instance.Launcher?.Pack ?? string.Empty },
-                        { "{packVersion}", instance.Launcher?.Version ?? string.Empty },
-                        { "{mcVersion}", instance.McVersion ?? string.Empty },
-                        { "{modLoader}", instance.Launcher?.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
+                        { "{instancename}", instance.Launcher?.Name ?? string.Empty },
+                        { "{packname}", instance.Launcher?.Pack ?? string.Empty },
+                        { "{packversion}", instance.Launcher?.Version ?? string.Empty },
+                        { "{mcversion}", instance.McVersion ?? string.Empty },
+                        { "{modloader}", instance.Launcher?.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
                     };
-                    string fullRgx = string.Join("|", tokens.Keys.ToArray());
                     Regex TokenRegex = new Regex($"({string.Join("|", tokens.Keys.ToArray())})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                     string newName = tokenString;
-                    newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value]);
+                    newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value.ToLowerInvariant()]);
                     inst.Name = newName;
                     PlayniteApi.Database.Games.Update(inst);
                     //Thread.Sleep(2000);
