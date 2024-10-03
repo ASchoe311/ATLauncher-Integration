@@ -54,6 +54,7 @@
     <PackageReference Include="coverlet.collector" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestResizeCover.cs" />
     <Compile Include="TestTokenFormatter.cs" />
     <Compile Include="TestJsonRead.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -65,7 +66,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="jsons\**">
+    <Content Include="TestData\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

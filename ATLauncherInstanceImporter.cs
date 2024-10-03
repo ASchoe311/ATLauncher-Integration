@@ -427,7 +427,7 @@ namespace ATLauncherInstanceImporter
         /// <param name="g"><c>Game</c> object representing an ATLauncher instance</param>
         /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
         /// <returns>A string containing the path to the new cover image</returns>
-        internal string ResizeCover(string installDir,  bool toPortrait, string dataPath)
+        internal static string ResizeCover(string installDir,  bool toPortrait, string dataPath)
         {
             //logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(installDir);

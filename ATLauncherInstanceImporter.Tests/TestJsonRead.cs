@@ -13,7 +13,7 @@ namespace ATLauncherInstanceImporter.Tests
 
         private string JSONText(string folder)
         {
-            return File.ReadAllText(Path.Combine(@".\jsons", folder, "instance.json"));
+            return File.ReadAllText(Path.Combine(@".\TestData", folder, "instance.json"));
         }
 
         [Theory]

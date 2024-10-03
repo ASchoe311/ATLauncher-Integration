@@ -11,7 +11,7 @@ namespace ATLauncherInstanceImporter.Tests
     {
         private string JSONText(string folder)
         {
-            return File.ReadAllText(Path.Combine(@".\jsons", folder, "instance.json"));
+            return File.ReadAllText(Path.Combine(@".\TestData", folder, "instance.json"));
         }
 
         private string RandomizeCase(string token)
@@ -36,7 +36,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{instanceName}";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal(instance.Launcher.Name, formatted);
         }
 
@@ -51,7 +51,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{packName}";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal(instance.Launcher.Pack, formatted);
         }
 
@@ -66,7 +66,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{packVersion}";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal(instance.Launcher.Version, formatted);
         }
 
@@ -81,7 +81,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{mcVersion}";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal(instance.McVersion, formatted);
         }
 
@@ -95,7 +95,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{modLoader}";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal(instance.Launcher.LoaderVersion.Type, formatted);
         }
 
@@ -104,7 +104,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText("vanilla"));
             string tokenString = "{modLoader}";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", "vanilla"));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", "vanilla"));
             Assert.Equal("Vanilla", formatted);
         }
 
@@ -118,7 +118,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{packName} {packVersion} for MC {mcVersion} ({modLoader})";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal($"{instance.Launcher.Pack} {instance.Launcher.Version} for MC {instance.McVersion} ({instance.Launcher.LoaderVersion.Type})", formatted);
         }
 
@@ -132,7 +132,7 @@ namespace ATLauncherInstanceImporter.Tests
         {
             var instance = Models.Instance.FromJson(JSONText(jsonPath));
             string tokenString = "{packNae} {packVersion} for MC {mcVersion ({modLoader})";
-            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\jsons", jsonPath));
+            string formatted = ATLauncherInstanceImporter.ChangeInstanceName(tokenString, Path.Combine(@".\TestData", jsonPath));
             Assert.Equal($"{{packNae}} {instance.Launcher.Version} for MC {{mcVersion ({instance.Launcher.LoaderVersion.Type})", formatted);
         }
 

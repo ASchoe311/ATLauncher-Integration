@@ -501,6 +501,10 @@
         public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize, string pluginDataPath)
         {
             string imgCache = Path.Combine(pluginDataPath, "ImageCache");
+            if (!Directory.Exists(imgCache))
+            {
+                Directory.CreateDirectory(imgCache);
+            }
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
             MetadataFile cover = new MetadataFile();
             MetadataFile background = new MetadataFile();
