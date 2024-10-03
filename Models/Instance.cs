@@ -245,7 +245,7 @@
             {
                 return SourceEnum.Technic;
             }
-            return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value && Launcher.LoaderVersion == null && Launcher.Mods.Count == 0) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
+            return (Launcher.IsVanilla.HasValue && Launcher.IsVanilla.Value && (Launcher.LoaderVersion == null || Launcher.Mods.Count == 0)) ? SourceEnum.Vanilla : SourceEnum.ATLauncher;
         }
 
         /// <summary>
@@ -654,7 +654,6 @@
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
-                    cover = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"));
                     cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"), false, true));
                     background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"), false, false));
                     break;
