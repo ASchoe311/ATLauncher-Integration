@@ -135,7 +135,7 @@ namespace ATLauncherInstanceImporter
         /// </summary>
         /// <param name="instanceDir">The directory containing the instance</param>
         /// <returns>An <c>Instance</c> object containing information about an ATLauncher instance</returns>
-        public Models.Instance GetInstance(string instanceDir)
+        public static Models.Instance GetInstance(string instanceDir)
         {
             return Models.Instance.FromJson(File.ReadAllText(Path.Combine(instanceDir, "instance.json")));
         }
@@ -411,7 +411,7 @@ namespace ATLauncherInstanceImporter
                 foreach(var i in instances)
                 {
                     activateGlobalProgress.CurrentProgressValue += 1;
-                    string imgPath = ResizeCover(i.InstallDirectory, toPortrait);
+                    string imgPath = ResizeCover(i.InstallDirectory, toPortrait, GetPluginUserDataPath());
                     i.CoverImage = imgPath;
                     PlayniteApi.Database.Games.Update(i);
                     //Thread.Sleep(2000);
@@ -426,22 +426,22 @@ namespace ATLauncherInstanceImporter
         /// <param name="g"><c>Game</c> object representing an ATLauncher instance</param>
         /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
         /// <returns>A string containing the path to the new cover image</returns>
-        internal string ResizeCover(string installDir,  bool toPortrait, string dataPath = "")
+        internal string ResizeCover(string installDir,  bool toPortrait, string dataPath)
         {
             //logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(installDir);
             // Try to get the desired cover from the image cache
-            if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
+            if (toPortrait && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
             {
-                return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png");
+                return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_portrait_cover.png");
             }
-            if (!toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png")))
+            if (!toPortrait && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png")))
             {
-                return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png");
+                return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png");
             }
 
             // Generate new cached cover
-            var packImgs = Models.Instance.GetPackImages(instance, installDir, toPortrait, dataPath == "" ? GetPluginUserDataPath() : dataPath);
+            var packImgs = Models.Instance.GetPackImages(instance, installDir, toPortrait, dataPath);
             return packImgs.Item2.Path;
         }
 
@@ -483,7 +483,7 @@ namespace ATLauncherInstanceImporter
         }
 
 
-        internal string ChangeInstanceName(string tokenString, string installDir)
+        internal static string ChangeInstanceName(string tokenString, string installDir)
         {
             Instance instance = GetInstance(installDir);
             Dictionary<string, string> tokens = new Dictionary<string, string>()
