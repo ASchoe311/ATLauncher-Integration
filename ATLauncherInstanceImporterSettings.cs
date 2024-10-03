@@ -17,7 +17,7 @@ namespace ATLauncherInstanceImporter
         private static readonly ILogger logger = LogManager.GetLogger();
         
         private string aTLauncherLoc = string.Empty;
-        private bool showATLauncherConsole = false;
+        private bool showATLauncherConsole = true;
         private bool closeATLOnLaunch = true;
         private bool _AddMetadataOnImport = true;
         private bool _AutoIgnoreInstances = true;
