@@ -46,6 +46,11 @@
         </DockPanel>
         <CheckBox Content="{DynamicResource LOCATLauncherAddIgnore}" IsChecked="{Binding Settings.AutoIgnoreInstances}" Margin="10,5,0,5"/>
         <CheckBox Content="{DynamicResource LOCATLauncherResizeCovers}" ToolTip="{DynamicResource LOCATLauncherResizeCoversTooltip}"
-                  IsChecked="{Binding Settings.ResizeCovers}" Margin="10,5,0,5" />
+                  IsChecked="{Binding Settings.ResizeCovers}" Margin="10,10,0,5" />
+        <DockPanel Margin="10">
+            <TextBlock Text="Format for instance names" DockPanel.Dock="Top" />
+            <TextBox DockPanel.Dock="Top" Text="{Binding Settings.NameFormat, UpdateSourceTrigger=PropertyChanged}" Margin="10,5,10,5"/>
+            <TextBlock DockPanel.Dock="Bottom" Text="Acceptable tokens: {instanceName}, {packName}, {packVersion}, {mcVersion}, {modLoader}"/>
+        </DockPanel>
     </StackPanel>
 </UserControl>

@@ -23,6 +23,7 @@ namespace ATLauncherInstanceImporter
         private bool _AutoIgnoreInstances = true;
         private bool _ResizeCovers = false;
         private int _PluginVersion = 1;
+        private string _NameFormat = "{instanceName}";
 
         public string ATLauncherLoc { get => aTLauncherLoc; set => SetValue(ref aTLauncherLoc, value); }
         public bool ShowATLauncherConsole { get => showATLauncherConsole; set => SetValue(ref showATLauncherConsole, value); }
@@ -32,6 +33,7 @@ namespace ATLauncherInstanceImporter
         public int PluginVersion { get => _PluginVersion; set => SetValue(ref _PluginVersion, value);  }
         public bool AutoIgnoreInstances { get => _AutoIgnoreInstances; set => SetValue(ref _AutoIgnoreInstances, value); }
         public bool ResizeCovers { get => _ResizeCovers; set => SetValue(ref _ResizeCovers, value); }
+        public string NameFormat { get => _NameFormat; set => SetValue(ref _NameFormat, value); }
 
     }
 
@@ -155,6 +157,10 @@ namespace ATLauncherInstanceImporter
             {
                 //plugin.ResizeCoversAsync(Settings.ResizeCovers);
                 plugin.ResizeCoversProgress(Settings.ResizeCovers);
+            }
+            if (Settings.NameFormat != editingClone.NameFormat)
+            {
+                plugin.ChangeInstanceNames(settings.NameFormat);
             }
         }
 

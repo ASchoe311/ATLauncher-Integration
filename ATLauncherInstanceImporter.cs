@@ -446,6 +446,53 @@ namespace ATLauncherInstanceImporter
             return packImgs.Item2.Path;
         }
 
+        public void ChangeInstanceNames(string tokenString)
+        {
+            List<Game> instances = new List<Game>();
+            foreach (var game in PlayniteApi.Database.Games)
+            {
+                if (game.PluginId == Id)
+                {
+                    instances.Add(game);
+                }
+            }
+            
+            logger.Debug($"changing instance names");
+            GlobalProgressOptions gpo = new GlobalProgressOptions(ResourceProvider.GetString("LOCATLauncherChangingNames"), false);
+            gpo.IsIndeterminate = false;
+
+            // Change covers with progress dialog
+            PlayniteApi.Dialogs.ActivateGlobalProgress((activateGlobalProgress) =>
+            {
+                activateGlobalProgress.ProgressMaxValue = instances.Count;
+                activateGlobalProgress.CurrentProgressValue = -1;
+                PlayniteApi.Database.Games.BeginBufferUpdate();
+                foreach (var inst in instances)
+                {
+                    activateGlobalProgress.CurrentProgressValue += 1;
+                    Instance instance = GetInstance(inst.InstallDirectory);
+                    Dictionary<string, string> tokens = new Dictionary<string, string>()
+                    {
+                        { "{instanceName}", instance.Launcher?.Name ?? string.Empty },
+                        { "{packName}", instance.Launcher.Pack },
+                        { "{packVersion}", instance.Launcher?.Version ?? string.Empty },
+                        { "{mcVersion}", instance.McVersion },
+                        { "{modLoader}", instance.Launcher.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
+                    };
+                    string fullRgx = string.Join("|", tokens.Keys.ToArray());
+                    Regex TokenRegex = new Regex($"({string.Join("|", tokens.Keys.ToArray())})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    gpo.Text = inst.Name;
+                    string newName = tokenString;
+                    newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value]);
+                    inst.Name = newName;
+                    PlayniteApi.Database.Games.Update(inst);
+                    //Thread.Sleep(2000);
+                }
+                PlayniteApi.Database.Games.EndBufferUpdate();
+            }, gpo);
+        
+        }
+
         /// <summary>
         /// Resizes the cover images on demand without blocking UI thread
         /// </summary>

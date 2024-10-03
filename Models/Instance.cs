@@ -59,6 +59,9 @@
         [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
         public string Description { get; set; }
 
+        [JsonProperty("version", NullValueHandling = NullValueHandling.Ignore)]
+        public string Version { get; set; }
+
         [JsonProperty("loaderVersion", NullValueHandling = NullValueHandling.Ignore)]
         public LoaderVersion LoaderVersion { get; set; }
 
