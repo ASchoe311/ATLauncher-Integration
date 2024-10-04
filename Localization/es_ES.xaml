@@ -39,4 +39,5 @@
     <sys:String x:Key="LOCATLauncherNotInFolder">ATLauncher.exe no se encuentra en la carpeta seleccionada, la configuración no se modificará</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCovers">Reestructurar la carátula de la instancia en vertical</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Altera la carátula para que se vea mejor al utilizar Playnite en modo de pantalla completa</sys:String>
+    <sys:String x:Key="LOCATLauncherChangingCovers">Actualización de las portadas</sys:String>
 </ResourceDictionary>
