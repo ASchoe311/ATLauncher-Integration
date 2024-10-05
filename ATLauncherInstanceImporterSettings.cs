@@ -34,7 +34,7 @@ namespace ATLauncherInstanceImporter
         public bool AutoIgnoreInstances { get => _AutoIgnoreInstances; set => SetValue(ref _AutoIgnoreInstances, value); }
         public bool ResizeCovers { get => _ResizeCovers; set => SetValue(ref _ResizeCovers, value); }
         public string NameFormat { get => _NameFormat; set => SetValue(ref _NameFormat, value); }
-        public double CoverAspect { get; set; } = (3.0 / 4.0);
+        public double CoverAspect { get; set; } = 0.0;
     }
 
     public class ATLauncherInstanceImporterSettingsViewModel : ObservableObject, ISettings
