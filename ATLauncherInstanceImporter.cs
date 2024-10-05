@@ -488,7 +488,12 @@ namespace ATLauncherInstanceImporter
         
         }
 
-
+        /// <summary>
+        /// Get the new name for an instance based on the given format
+        /// </summary>
+        /// <param name="tokenString">The format for the new instance name</param>
+        /// <param name="installDir">Installation directory of the instance</param>
+        /// <returns>string containing the new instance name</returns>
         internal static string ChangeInstanceName(string tokenString, string installDir)
         {
             Instance instance = GetInstance(installDir);
@@ -505,36 +510,6 @@ namespace ATLauncherInstanceImporter
             newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value.ToLowerInvariant()]);
             return newName;
         }
-        /// <summary>
-        /// Resizes the cover images on demand without blocking UI thread
-        /// </summary>
-        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        //public async void ResizeCoversAsync(bool toPortrait)
-        //{
-        //    await Task.Run(() => ResizeCovers(toPortrait));
-        //}
-
-        /// <summary>
-        /// Changes cover images for instances between standard and portrait mode
-        /// </summary>
-        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        //private void ResizeCovers(bool toPortrait)
-        //{
-        //    PlayniteApi.Database.Games.BeginBufferUpdate();
-        //    foreach (var game in PlayniteApi.Database.Games)
-        //    {
-        //        if (game.PluginId != Id)
-        //        {
-        //            continue;
-        //        }
-        //        //logger.Debug($"Changing cover for {game.Name}");
-        //        string imgPath = ResizeCover(game, toPortrait);
-        //        game.CoverImage = imgPath;
-        //        PlayniteApi.Database.Games.Update(game);
-        //        //logger.Debug($"Successfully changed cover for {game.Name}");
-        //    }
-        //    PlayniteApi.Database.Games.EndBufferUpdate();
-        //}
 
     }
 }

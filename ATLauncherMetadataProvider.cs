@@ -48,7 +48,12 @@ namespace ATLauncherInstanceImporter
             return metaData;
         }
 
-        public static string FormatGivenDescription(string desc)
+        /// <summary>
+        /// Converts formatting from the description property of an instance to a format usable by Playnite
+        /// </summary>
+        /// <param name="desc">Description property from instance.json file</param>
+        /// <returns>The formatted description</returns>
+        private static string FormatGivenDescription(string desc)
         {
             string pattern = @"\n";
             string substitution = @"<br>";
