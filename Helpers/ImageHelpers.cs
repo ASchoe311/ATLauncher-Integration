@@ -125,12 +125,12 @@ namespace ATLauncherInstanceImporter.Helpers
             if (sourceAspect > targetAspect)
             {
                 targetWidth = sourceBitmap.Width;
-                targetHeight = (int)(targetWidth * (4.0 / 3.0));
+                targetHeight = (int)(targetWidth * (1.0 / targetAspect));
             }
             else
             {
                 targetHeight = sourceBitmap.Height;
-                targetWidth = (int)(targetHeight * (3.0 / 4.0));
+                targetWidth = (int)(targetHeight * (targetAspect));
             }
 
             // Create settings for MagicScaler
