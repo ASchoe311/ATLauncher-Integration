@@ -428,7 +428,7 @@
         /// <param name="instanceDir">The path to the instance folder</param>
         /// <param name="resize">Determines whether or not the cover images should be resized to portrait</param>
         /// <returns>A Tuple of MetadataFiles representing icon, cover, and background</returns>
-        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, bool resize, string pluginDataPath)
+        public static Tuple<MetadataFile, MetadataFile, MetadataFile> GetPackImages(Instance instance, string instanceDir, double aspectRatio, string pluginDataPath)
         {
             string imgCache = Path.Combine(pluginDataPath, "ImageCache");
             if (!Directory.Exists(imgCache))
@@ -439,7 +439,16 @@
             byte[] imgBytes;
             string defaultCover = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png");
             string defaultCoverPortrait = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimagerect.png");
-            MetadataFile cover = (resize) ? new MetadataFile($"{instance.Uuid}_cover.png", ImageHelpers.GetImageBytes(defaultCoverPortrait)) : new MetadataFile($"{instance.Uuid}_cover", ImageHelpers.GetImageBytes(defaultCover));
+            string defaultCoverSquare = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimagesquare.png");
+            MetadataFile cover = new MetadataFile($"{instance.Uuid}_cover", ImageHelpers.GetImageBytes(defaultCover));
+            if (aspectRatio == (3.0/4.0))
+            {
+                cover = new MetadataFile($"{instance.Uuid}_cover", ImageHelpers.GetImageBytes(defaultCoverPortrait));
+            }
+            else if (aspectRatio == 1.0)
+            {
+                cover = new MetadataFile($"{instance.Uuid}_cover.png", ImageHelpers.GetImageBytes(defaultCoverSquare));
+            }
             MetadataFile background = new MetadataFile($"{instance.Uuid}_background.png", ImageHelpers.GetImageBytes(defaultCover));
             switch (instance.PackSource())
             {
@@ -450,7 +459,7 @@
                     }
                     if (instance.Launcher.CurseForgeProject.Logo.Url != null && instance.Launcher.CurseForgeProject.Logo.Url != string.Empty)
                     {
-                        if (resize && ImageHelpers.TryResizeImage(new Uri(instance.Launcher.CurseForgeProject.Logo.Url), out imgBytes))
+                        if (ImageHelpers.TryResizeImage(new Uri(instance.Launcher.CurseForgeProject.Logo.Url), out imgBytes, aspectRatio))
                         {
                             cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
@@ -468,7 +477,7 @@
                     }
                     if (File.Exists(Path.Combine(instanceDir, "instance.png")))
                     {
-                        if (resize && ImageHelpers.TryResizeImage(Path.Combine(instanceDir, "instance.png"), out imgBytes))
+                        if (ImageHelpers.TryResizeImage(Path.Combine(instanceDir, "instance.png"), out imgBytes, aspectRatio))
                         {
                             cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
@@ -486,7 +495,7 @@
                     }
                     if (instance.Launcher.TechnicModpack.Logo.Url != null && instance.Launcher.TechnicModpack.Logo.Url != string.Empty)
                     {
-                        if (resize && ImageHelpers.TryResizeImage(new Uri(instance.Launcher.TechnicModpack.Logo.Url), out imgBytes))
+                        if (ImageHelpers.TryResizeImage(new Uri(instance.Launcher.TechnicModpack.Logo.Url), out imgBytes, aspectRatio))
                         {
                             cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
@@ -505,7 +514,7 @@
                         packSlug = Regex.Replace(packSlug, @"\s+", "");
                         WebClient webClient = new WebClient();
                         var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                        if (resize && ImageHelpers.TryResizeImage(new Uri($"https://cdn.atlcdn.net/images/packs/{packSlug}.png"), out imgBytes))
+                        if (ImageHelpers.TryResizeImage(new Uri($"https://cdn.atlcdn.net/images/packs/{packSlug}.png"), out imgBytes, aspectRatio))
                         {
                             cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
@@ -522,7 +531,14 @@
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
-                    cover = new MetadataFile($"{instance.Uuid}_cover.png", ImageHelpers.GetImageBytes(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png")));
+                    if (ImageHelpers.TryResizeImage(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"), out imgBytes, aspectRatio))
+                    {
+                        cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
+                    }
+                    else
+                    {
+                        cover = new MetadataFile($"{instance.Uuid}_cover.png", ImageHelpers.GetImageBytes(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png")));
+                    }
                     background = new MetadataFile($"{instance.Uuid}_background.png", ImageHelpers.GetImageBytes(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png")));
                     break;
             }

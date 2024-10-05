@@ -74,20 +74,6 @@ namespace ATLauncherInstanceImporter.Helpers
             return bmp;
         }
 
-        /// <summary>
-        /// Convert a bitmap image to a byte array
-        /// </summary>
-        /// <param name="bmp">Bitmap image to convert</param>
-        /// <returns>Byte array containing bitmap data</returns>
-        private static byte[] BmpToBytes(Bitmap bmp)
-        {
-            using (var ms = new MemoryStream())
-            {
-                ms.Seek(0, SeekOrigin.Begin);
-                bmp.Save(ms, ImageFormat.Png);
-                return ms.ToArray();
-            }
-        }
 
         private static Image BytesToImage(byte[] bytes)
         {
@@ -106,7 +92,22 @@ namespace ATLauncherInstanceImporter.Helpers
         public static byte[] GetImageBytes(string imagePath)
         {
             Bitmap bmp = IngestLocalBitmap(imagePath);
-            return BmpToBytes(bmp);
+            return GetImageBytes(bmp);
+        }
+        
+        /// <summary>
+        /// Convert a bitmap image to a byte array
+        /// </summary>
+        /// <param name="bmp">Bitmap image to convert</param>
+        /// <returns>Byte array containing bitmap data</returns>
+        private static byte[] GetImageBytes(Bitmap bmp)
+        {
+            using (var ms = new MemoryStream())
+            {
+                ms.Seek(0, SeekOrigin.Begin);
+                bmp.Save(ms, ImageFormat.Png);
+                return ms.ToArray();
+            }
         }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace ATLauncherInstanceImporter.Helpers
         /// <param name="sourceBitmap">The bitmap to resize</param>
         /// <param name="targetAspect">The target aspect ratio</param>
         /// <returns>A byte array representing the resized image</returns>
-        public static byte[] ResizeWithPadding(Bitmap sourceBitmap, double targetAspect = (3.0/4.0))
+        public static byte[] ResizeWithPadding(Bitmap sourceBitmap, double targetAspect)
         {
             double sourceAspect = (double)sourceBitmap.Width / sourceBitmap.Height;
 
@@ -168,7 +169,12 @@ namespace ATLauncherInstanceImporter.Helpers
                 Bitmap bmp;
                 if (TrySaveWebImage(imgUrl, out bmp))
                 {
-                    imgBytes = ResizeWithPadding(bmp);
+                    if (targetAspect == 0.0)
+                    {
+                        imgBytes = GetImageBytes(bmp);
+                        return true;
+                    }
+                    imgBytes = ResizeWithPadding(bmp, targetAspect);
                     return true;
                 }
                 imgBytes = null;
@@ -193,7 +199,12 @@ namespace ATLauncherInstanceImporter.Helpers
             try
             {
                 Bitmap bmp = IngestLocalBitmap(filePath);
-                imgBytes = ResizeWithPadding(bmp);
+                if (targetAspect == 0.0)
+                {
+                    imgBytes = GetImageBytes(bmp);
+                    return true;
+                }
+                imgBytes = ResizeWithPadding(bmp, targetAspect);
                 return true;
             }
             catch

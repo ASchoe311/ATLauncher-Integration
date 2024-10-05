@@ -151,7 +151,7 @@ namespace ATLauncherInstanceImporter
                 try
                 {
                     Models.Instance instance = GetInstance(dir);
-                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.ResizeCovers, GetPluginUserDataPath());
+                    Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.CoverAspect, GetPluginUserDataPath());
                     string instanceName = ChangeInstanceName(settings.Settings.NameFormat, dir);
                     if (settings.Settings.AddMetadataOnImport)
                     {
@@ -282,7 +282,7 @@ namespace ATLauncherInstanceImporter
 
         public override LibraryMetadataProvider GetMetadataDownloader()
         {
-            return new ATLauncherMetadataProvider(this, settings.Settings.ResizeCovers);
+            return new ATLauncherMetadataProvider(this, settings.Settings.CoverAspect);
         }
         public override ISettings GetSettings(bool firstRunSettings)
         {
@@ -390,7 +390,7 @@ namespace ATLauncherInstanceImporter
         /// Updates cover images for ATLauncher instances and displays a progress bar
         /// </summary>
         /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
-        public void ResizeCoversProgress(bool toPortrait)
+        public void ResizeCoversProgress(double aspectRatio)
         {
             List<Game> instances = new List<Game>();
             foreach (var game in PlayniteApi.Database.Games)
@@ -413,7 +413,7 @@ namespace ATLauncherInstanceImporter
                 foreach(var i in instances)
                 {
                     activateGlobalProgress.CurrentProgressValue += 1;
-                    string imgPath = ResizeCover(i.InstallDirectory, toPortrait, GetPluginUserDataPath());
+                    string imgPath = ResizeCover(i.InstallDirectory, aspectRatio, GetPluginUserDataPath());
                     i.CoverImage = imgPath;
                     PlayniteApi.Database.Games.Update(i);
                     //Thread.Sleep(2000);
@@ -428,13 +428,13 @@ namespace ATLauncherInstanceImporter
         /// <param name="g"><c>Game</c> object representing an ATLauncher instance</param>
         /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
         /// <returns>A string containing the path to the new cover image</returns>
-        internal static string ResizeCover(string installDir,  bool toPortrait, string dataPath)
+        internal static string ResizeCover(string installDir,  double aspectRatio, string dataPath)
         {
             //logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(installDir);
           
             // Check cache for existing cover
-            string saveName = $"{instance.Uuid}_cover_{(toPortrait ? 1 : 0)}.png";
+            string saveName = $"{instance.Uuid}_cover_{aspectRatio}.png";
             string savePath = Path.Combine(dataPath, "ImageCache", saveName);
             if (File.Exists(savePath))
             {
@@ -442,7 +442,7 @@ namespace ATLauncherInstanceImporter
             }
 
             // Generate new cached cover
-            var packImgs = Models.Instance.GetPackImages(instance, installDir, toPortrait, dataPath);
+            var packImgs = Models.Instance.GetPackImages(instance, installDir, aspectRatio, dataPath);
             if (packImgs.Item2.HasContent)
             {
                 ImageHelpers.SaveBytesToImageFile(packImgs.Item2.Content, savePath);

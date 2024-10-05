@@ -3,12 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:atlauncherinstanceimporter="clr-namespace:ATLauncherInstanceImporter"
+             d:DataContext="{d:DesignInstance Type=atlauncherinstanceimporter:ATLauncherInstanceImporterSettingsViewModel}"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="600">
     <UserControl.Resources>
         <FontFamily x:Key="FontIcoFont">/Fonts/icofont.ttf#icofont</FontFamily>
     </UserControl.Resources>
-	<StackPanel>
+    <StackPanel>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition></RowDefinition>
@@ -25,8 +27,12 @@
         <CheckBox Content="{DynamicResource LOCATLauncherShowConsole}" IsChecked="{Binding Settings.ShowATLauncherConsole}" Margin="10,5,0,5"/>
         <CheckBox Content="{DynamicResource LOCATLauncherAutoClose}" IsChecked="{Binding Settings.CloseATLOnLaunch}" Margin="10,5,0,5"/>
         <CheckBox Content="{DynamicResource LOCATLauncherAddMetadata}" IsChecked="{Binding Settings.AddMetadataOnImport}"  Margin="10,5,0,5"/>
-        <CheckBox Content="{DynamicResource LOCATLauncherResizeCovers}" ToolTip="{DynamicResource LOCATLauncherResizeCoversTooltip}"
-            IsChecked="{Binding Settings.ResizeCovers}" Margin="10,5,0,5" />
+        <StackPanel Orientation="Horizontal" Margin="10,5,0,5">
+            <TextBlock Text="Cover art shape:" Margin="0,5,25,0"/>
+            <ComboBox Name="CoverShapeSelect" DisplayMemberPath="Key" SelectedValuePath="Value"
+                      SelectedValue="{Binding Settings.CoverAspect}" ItemsSource="{Binding Path=CoverShapes}" 
+                      IsEditable="False" MinWidth="150"/>
+        </StackPanel>
         <Separator Margin="0,15,0,5"/>
         <DockPanel Margin="10,15,10,15">
             <TextBlock DockPanel.Dock="Top" Text="{DynamicResource LOCATLauncherSpecifyFolders}" TextWrapping="Wrap" Margin="0,0,0,5"/>

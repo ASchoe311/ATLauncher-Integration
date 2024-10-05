@@ -14,12 +14,12 @@ namespace ATLauncherInstanceImporter
     {
         private static readonly ILogger logger = LogManager.GetLogger();
         private readonly ATLauncherInstanceImporter _plugin;
-        private readonly bool _resizeCovers;
+        private double _coverAspect;
 
-        public ATLauncherMetadataProvider(ATLauncherInstanceImporter plugin, bool resizeCovers)
+        public ATLauncherMetadataProvider(ATLauncherInstanceImporter plugin, double coverAspect)
         {
             this._plugin = plugin;
-            this._resizeCovers = resizeCovers;
+            this._coverAspect = coverAspect;
         }
 
 
@@ -27,7 +27,7 @@ namespace ATLauncherInstanceImporter
         {
             Models.Instance instance = ATLauncherInstanceImporter.GetInstance(game.InstallDirectory);
             //logger.Debug(Playnite.SDK.Data.Serialization.ToJson(instance));
-            Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, _resizeCovers, _plugin.GetPluginUserDataPath());
+            Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, _coverAspect, _plugin.GetPluginUserDataPath());
             var metaData = new GameMetadata()
             {
                 Description = GenerateInstanceDescription(instance),

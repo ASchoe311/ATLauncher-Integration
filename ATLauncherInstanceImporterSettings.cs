@@ -34,7 +34,7 @@ namespace ATLauncherInstanceImporter
         public bool AutoIgnoreInstances { get => _AutoIgnoreInstances; set => SetValue(ref _AutoIgnoreInstances, value); }
         public bool ResizeCovers { get => _ResizeCovers; set => SetValue(ref _ResizeCovers, value); }
         public string NameFormat { get => _NameFormat; set => SetValue(ref _NameFormat, value); }
-
+        public double CoverAspect { get; set; } = (3.0 / 4.0);
     }
 
     public class ATLauncherInstanceImporterSettingsViewModel : ObservableObject, ISettings
@@ -109,6 +109,13 @@ namespace ATLauncherInstanceImporter
             return string.Empty;
         }
 
+        public Dictionary<string, double> CoverShapes { get; } = new Dictionary<string, double>
+        {
+            { "Default", 0.0 },
+            { "Portrait", (3.0/4.0) },
+            { "Square", 1.0 }
+        };
+
         public ATLauncherInstanceImporterSettingsViewModel(ATLauncherInstanceImporter plugin)
         {
             // Injecting your plugin instance is required for Save/Load method because Playnite saves data to a location based on what plugin requested the operation.
@@ -153,10 +160,10 @@ namespace ATLauncherInstanceImporter
             {
                 plugin.SetClient();
             }
-            if (Settings.ResizeCovers != editingClone.ResizeCovers)
+            if (Settings.CoverAspect != editingClone.CoverAspect)
             {
                 //plugin.ResizeCoversAsync(Settings.ResizeCovers);
-                plugin.ResizeCoversProgress(Settings.ResizeCovers);
+                plugin.ResizeCoversProgress(Settings.CoverAspect);
             }
             if (Settings.NameFormat != editingClone.NameFormat)
             {
