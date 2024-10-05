@@ -48,5 +48,4 @@
     <sys:String x:Key="LOCATLauncherTokenPackVersion">{packVersion} - The version of the pack/instance</sys:String>
     <sys:String x:Key="LOCATLauncherTokenMcVersion">{mcVersion} - The Minecraft version of the instance</sys:String>
     <sys:String x:Key="LOCATLauncherTokenModLoader">{modLoader} - The mod loader used by the instance</sys:String>
-    
 </ResourceDictionary>
