@@ -20,6 +20,7 @@ using System.Drawing.Imaging;
 using System.Threading;
 using System.Windows.Threading;
 using ATLauncherInstanceImporter.Models;
+using ATLauncherInstanceImporter.Helpers;
 
 namespace ATLauncherInstanceImporter
 {
@@ -431,18 +432,22 @@ namespace ATLauncherInstanceImporter
         {
             //logger.Debug("Resizing cover for " + g.Name);
             var instance = GetInstance(installDir);
-            // Try to get the desired cover from the image cache
-            if ((!toPortrait || instance.PackSource() == SourceEnum.Vanilla) && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png")))
+          
+            // Check cache for existing cover
+            string saveName = $"{instance.Uuid}_cover_{(toPortrait ? 1 : 0)}.png";
+            string savePath = Path.Combine(dataPath, "ImageCache", saveName);
+            if (File.Exists(savePath))
             {
-                return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_cover.png");
-            }
-            if (toPortrait && File.Exists(Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
-            {
-                return Path.Combine(dataPath, "ImageCache", $"{instance.Uuid}_portrait_cover.png");
+                return savePath;
             }
 
             // Generate new cached cover
             var packImgs = Models.Instance.GetPackImages(instance, installDir, toPortrait, dataPath);
+            if (packImgs.Item2.HasContent)
+            {
+                ImageHelpers.SaveBytesToImageFile(packImgs.Item2.Content, savePath);
+                return savePath;
+            }
             return packImgs.Item2.Path;
         }
 
