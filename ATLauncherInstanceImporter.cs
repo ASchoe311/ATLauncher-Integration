@@ -20,6 +20,7 @@ using System.Drawing.Imaging;
 using System.Threading;
 using System.Windows.Threading;
 using ATLauncherInstanceImporter.Models;
+using ATLauncherInstanceImporter.Helpers;
 
 namespace ATLauncherInstanceImporter
 {
@@ -135,7 +136,7 @@ namespace ATLauncherInstanceImporter
         /// </summary>
         /// <param name="instanceDir">The directory containing the instance</param>
         /// <returns>An <c>Instance</c> object containing information about an ATLauncher instance</returns>
-        public Models.Instance GetInstance(string instanceDir)
+        public static Models.Instance GetInstance(string instanceDir)
         {
             return Models.Instance.FromJson(File.ReadAllText(Path.Combine(instanceDir, "instance.json")));
         }
@@ -151,11 +152,12 @@ namespace ATLauncherInstanceImporter
                 {
                     Models.Instance instance = GetInstance(dir);
                     Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, dir, settings.Settings.ResizeCovers, GetPluginUserDataPath());
+                    string instanceName = ChangeInstanceName(settings.Settings.NameFormat, dir);
                     if (settings.Settings.AddMetadataOnImport)
                     {
                         games.Add(new GameMetadata()
                         {
-                            Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                            Name = instanceName,
                             InstallDirectory = dir,
                             IsInstalled = true,
                             GameId = "atl-" + Path.GetFileName(dir).ToLower(),
@@ -177,7 +179,7 @@ namespace ATLauncherInstanceImporter
                     {
                         games.Add(new GameMetadata()
                         {
-                            Name = instance.Launcher.Name ?? instance.Launcher.Pack ?? Path.GetFileName(dir),
+                            Name = instanceName,
                             InstallDirectory = dir,
                             IsInstalled = true,
                             GameId = "atl-" + Path.GetFileName(dir).ToLower(),
@@ -410,9 +412,8 @@ namespace ATLauncherInstanceImporter
                 PlayniteApi.Database.Games.BeginBufferUpdate();
                 foreach(var i in instances)
                 {
-                    gpo.Text = i.Name;
                     activateGlobalProgress.CurrentProgressValue += 1;
-                    string imgPath = ResizeCover(i, toPortrait);
+                    string imgPath = ResizeCover(i.InstallDirectory, toPortrait, GetPluginUserDataPath());
                     i.CoverImage = imgPath;
                     PlayniteApi.Database.Games.Update(i);
                     //Thread.Sleep(2000);
@@ -427,55 +428,88 @@ namespace ATLauncherInstanceImporter
         /// <param name="g"><c>Game</c> object representing an ATLauncher instance</param>
         /// <param name="toPortrait"><c>Bool</c> determining if the new cover should be default or portrait</param>
         /// <returns>A string containing the path to the new cover image</returns>
-        private string ResizeCover(Game g,  bool toPortrait)
+        internal static string ResizeCover(string installDir,  bool toPortrait, string dataPath)
         {
-            logger.Debug("Resizing cover for " + g.Name);
-            var instance = GetInstance(g.InstallDirectory);
-            // Try to get the desired cover from the image cache
-            if (toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png")))
+            //logger.Debug("Resizing cover for " + g.Name);
+            var instance = GetInstance(installDir);
+          
+            // Check cache for existing cover
+            string saveName = $"{instance.Uuid}_cover_{(toPortrait ? 1 : 0)}.png";
+            string savePath = Path.Combine(dataPath, "ImageCache", saveName);
+            if (File.Exists(savePath))
             {
-                return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_portrait_cover.png");
-            }
-            if (!toPortrait && File.Exists(Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png")))
-            {
-                return Path.Combine(GetPluginUserDataPath(), "ImageCache", $"{instance.Uuid}_cover.png");
+                return savePath;
             }
 
             // Generate new cached cover
-            var packImgs = Models.Instance.GetPackImages(instance, g.InstallDirectory, toPortrait, GetPluginUserDataPath());
+            var packImgs = Models.Instance.GetPackImages(instance, installDir, toPortrait, dataPath);
+            if (packImgs.Item2.HasContent)
+            {
+                ImageHelpers.SaveBytesToImageFile(packImgs.Item2.Content, savePath);
+                return savePath;
+            }
             return packImgs.Item2.Path;
         }
 
         /// <summary>
-        /// Resizes the cover images on demand without blocking UI thread
+        /// Changes names for all instances based on provided token formatted string, shows a progress bar
         /// </summary>
-        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        //public async void ResizeCoversAsync(bool toPortrait)
-        //{
-        //    await Task.Run(() => ResizeCovers(toPortrait));
-        //}
+        /// <param name="tokenString">The string containing the name format for instances</param>
+        public void ChangeInstanceNames(string tokenString)
+        {
+            List<Game> instances = new List<Game>();
+            foreach (var game in PlayniteApi.Database.Games)
+            {
+                if (game.PluginId == Id)
+                {
+                    instances.Add(game);
+                }
+            }
+            
+            logger.Debug($"changing instance names");
+            GlobalProgressOptions gpo = new GlobalProgressOptions(ResourceProvider.GetString("LOCATLauncherChangingNames"), false);
+            gpo.IsIndeterminate = false;
+
+            // Change covers with progress dialog
+            PlayniteApi.Dialogs.ActivateGlobalProgress((activateGlobalProgress) =>
+            {
+                activateGlobalProgress.ProgressMaxValue = instances.Count;
+                activateGlobalProgress.CurrentProgressValue = -1;
+                PlayniteApi.Database.Games.BeginBufferUpdate();
+                foreach (var inst in instances)
+                {
+                    activateGlobalProgress.CurrentProgressValue += 1;
+                    inst.Name = ChangeInstanceName(tokenString, inst.InstallDirectory);
+                    PlayniteApi.Database.Games.Update(inst);
+                    //Thread.Sleep(2000);
+                }
+                PlayniteApi.Database.Games.EndBufferUpdate();
+            }, gpo);
+        
+        }
 
         /// <summary>
-        /// Changes cover images for instances between standard and portrait mode
+        /// Get the new name for an instance based on the given format
         /// </summary>
-        /// <param name="toPortrait">Determines if cover images will be standard (false) or portait (true)</param>
-        //private void ResizeCovers(bool toPortrait)
-        //{
-        //    PlayniteApi.Database.Games.BeginBufferUpdate();
-        //    foreach (var game in PlayniteApi.Database.Games)
-        //    {
-        //        if (game.PluginId != Id)
-        //        {
-        //            continue;
-        //        }
-        //        //logger.Debug($"Changing cover for {game.Name}");
-        //        string imgPath = ResizeCover(game, toPortrait);
-        //        game.CoverImage = imgPath;
-        //        PlayniteApi.Database.Games.Update(game);
-        //        //logger.Debug($"Successfully changed cover for {game.Name}");
-        //    }
-        //    PlayniteApi.Database.Games.EndBufferUpdate();
-        //}
+        /// <param name="tokenString">The format for the new instance name</param>
+        /// <param name="installDir">Installation directory of the instance</param>
+        /// <returns>string containing the new instance name</returns>
+        internal static string ChangeInstanceName(string tokenString, string installDir)
+        {
+            Instance instance = GetInstance(installDir);
+            Dictionary<string, string> tokens = new Dictionary<string, string>()
+            {
+                { "{instancename}", instance.Launcher?.Name ?? string.Empty },
+                { "{packname}", instance.Launcher?.Pack ?? string.Empty },
+                { "{packversion}", instance.Launcher?.Version ?? string.Empty },
+                { "{mcversion}", instance.McVersion ?? string.Empty },
+                { "{modloader}", instance.Launcher?.LoaderVersion?.Type ?? ((instance.Launcher.IsVanilla.HasValue && instance.Launcher.IsVanilla.Value) ? "Vanilla" : string.Empty) }
+            };
+            Regex TokenRegex = new Regex($"({string.Join("|", tokens.Keys.ToArray())})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            string newName = tokenString;
+            newName = TokenRegex.Replace(newName, match => tokens[match.Groups[0].Value.ToLowerInvariant()]);
+            return newName;
+        }
 
     }
 }

@@ -25,7 +25,7 @@ namespace ATLauncherInstanceImporter
 
         public override GameMetadata GetMetadata(Game game)
         {
-            Models.Instance instance = _plugin.GetInstance(game.InstallDirectory);
+            Models.Instance instance = ATLauncherInstanceImporter.GetInstance(game.InstallDirectory);
             //logger.Debug(Playnite.SDK.Data.Serialization.ToJson(instance));
             Tuple<MetadataFile, MetadataFile, MetadataFile> imgs = Models.Instance.GetPackImages(instance, game.InstallDirectory, _resizeCovers, _plugin.GetPluginUserDataPath());
             var metaData = new GameMetadata()
@@ -48,7 +48,12 @@ namespace ATLauncherInstanceImporter
             return metaData;
         }
 
-        public static string FormatGivenDescription(string desc)
+        /// <summary>
+        /// Converts formatting from the description property of an instance to a format usable by Playnite
+        /// </summary>
+        /// <param name="desc">Description property from instance.json file</param>
+        /// <returns>The formatted description</returns>
+        private static string FormatGivenDescription(string desc)
         {
             string pattern = @"\n";
             string substitution = @"<br>";

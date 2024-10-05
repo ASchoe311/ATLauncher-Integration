@@ -1,5 +1,20 @@
 ﻿AddonId: ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b
 Packages:
+  - Version: 2.3.0
+    RequiredApiVersion: 6.2.0
+    ReleaseDate: 2024-10-04
+    PackageUrl: https://github.com/ASchoe311/ATLauncher-Integration/releases/download/v2.3.0/ATLauncherInstanceImporter_40e56f44-4955-40ec-9bf3-682c4007e55b_2_3_0.pext
+    Changelog:
+    - Added the option to reshape instance cover images to portrait to look better in fullscreen mode
+    - Added the ability to customize the format of instance names in Playnite library
+    - Plugin now caches cover and background images to prevent their unintentional deletion from file system when removing an instance from Playnite
+    - Revamped the look of the settings menu
+    - Instance descriptions now contain proper line breaks where needed
+    - Fixed Playnite errors when trying to open ATLauncher in 3rd party launchers menu
+    - Added error handling for instance uninstall
+    - Added translations - German, Spanish
+    - Fixed ATLauncher Not Found notification duplication
+    - Added docstrings and comments to code base
   - Version: 2.2.1
     RequiredApiVersion: 6.2.0
     ReleaseDate: 2024-09-27

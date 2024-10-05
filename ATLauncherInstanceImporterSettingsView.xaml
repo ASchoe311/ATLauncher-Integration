@@ -25,11 +25,17 @@
         <CheckBox Content="{DynamicResource LOCATLauncherShowConsole}" IsChecked="{Binding Settings.ShowATLauncherConsole}" Margin="10,5,0,5"/>
         <CheckBox Content="{DynamicResource LOCATLauncherAutoClose}" IsChecked="{Binding Settings.CloseATLOnLaunch}" Margin="10,5,0,5"/>
         <CheckBox Content="{DynamicResource LOCATLauncherAddMetadata}" IsChecked="{Binding Settings.AddMetadataOnImport}"  Margin="10,5,0,5"/>
-        <DockPanel Margin="10">
+        <CheckBox Content="{DynamicResource LOCATLauncherResizeCovers}" ToolTip="{DynamicResource LOCATLauncherResizeCoversTooltip}"
+            IsChecked="{Binding Settings.ResizeCovers}" Margin="10,5,0,5" />
+        <Separator Margin="0,15,0,5"/>
+        <DockPanel Margin="10,15,10,15">
             <TextBlock DockPanel.Dock="Top" Text="{DynamicResource LOCATLauncherSpecifyFolders}" TextWrapping="Wrap" Margin="0,0,0,5"/>
             <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
-                <Button Content="{DynamicResource LOCAddTitle}" Margin="0,10,0,0" DockPanel.Dock="Left" Command="{Binding AddIgnoreCommand}" />
-                <Button Content="{DynamicResource LOCRemoveTitle}" Margin="10,10,0,0" DockPanel.Dock="Left" Command="{Binding RemoveIgnoreCommand}" CommandParameter="{Binding SelectedItem, ElementName=GridIgnoreList}"/>
+                <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                    <Button Content="{DynamicResource LOCAddTitle}" Margin="0,10,0,0" DockPanel.Dock="Left" Command="{Binding AddIgnoreCommand}" />
+                    <Button Content="{DynamicResource LOCRemoveTitle}" Margin="10,10,0,0" DockPanel.Dock="Left" Command="{Binding RemoveIgnoreCommand}" CommandParameter="{Binding SelectedItem, ElementName=GridIgnoreList}"/>
+                </DockPanel>
+                <CheckBox Content="{DynamicResource LOCATLauncherAddIgnore}" IsChecked="{Binding Settings.AutoIgnoreInstances}" Margin="0,10,0,5" DockPanel.Dock="Bottom"/>
             </DockPanel>
             <DataGrid Name="GridIgnoreList" ItemsSource="{Binding Settings.InstanceIgnoreList}" DockPanel.Dock="Top"
               CanUserAddRows="False" CanUserResizeRows="False" AutoGenerateColumns="False" GridLinesVisibility="None" SelectionMode="Single">
@@ -44,8 +50,31 @@
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>
-        <CheckBox Content="{DynamicResource LOCATLauncherAddIgnore}" IsChecked="{Binding Settings.AutoIgnoreInstances}" Margin="10,5,0,5"/>
-        <CheckBox Content="{DynamicResource LOCATLauncherResizeCovers}" ToolTip="{DynamicResource LOCATLauncherResizeCoversTooltip}"
-                  IsChecked="{Binding Settings.ResizeCovers}" Margin="10,5,0,5" />
+        <Separator Margin="0,5,0,10"/>
+        <StackPanel Margin="10">
+            <TextBlock Text="{DynamicResource LOCATLauncherNameFormatHeader}" />
+            <TextBox  Text="{Binding Settings.NameFormat, UpdateSourceTrigger=PropertyChanged}" Margin="10,5,10,5"/>
+            <TextBlock Text="{DynamicResource LOCATLauncherAcceptableTokens}"/>
+            <TextBlock>
+                <Run Text="    "/>
+                <Run Text="{DynamicResource LOCATLauncherTokenInstName}"/>
+            </TextBlock>
+            <TextBlock>
+                <Run Text="    "/>
+                <Run Text="{DynamicResource LOCATLauncherTokenPackName}"/>
+            </TextBlock>
+            <TextBlock>
+                <Run Text="    "/>
+                <Run Text="{DynamicResource LOCATLauncherTokenPackVersion}"/>
+            </TextBlock>
+            <TextBlock>
+                <Run Text="    "/>
+                <Run Text="{DynamicResource LOCATLauncherTokenMcVersion}"/>
+            </TextBlock>
+            <TextBlock>
+                <Run Text="    "/>
+                <Run Text="{DynamicResource LOCATLauncherTokenModLoader}"/>
+            </TextBlock>
+        </StackPanel>
     </StackPanel>
 </UserControl>
