@@ -18,6 +18,7 @@
     using Playnite.SDK.Models;
     using System.Windows.Media.Imaging;
     using System.Windows;
+    using Helpers;
 
     public enum SourceEnum
     {
@@ -421,77 +422,6 @@
         }
 
         /// <summary>
-        /// Try to save an image from the internet as a bitmap
-        /// </summary>
-        /// <param name="imageUrl">The URL of the image</param>
-        /// <param name="bmp">The output Bitmap object</param>
-        /// <returns>A boolean representing success of saving the image</returns>
-        private static bool TrySaveImage(string imageUrl, out Bitmap bmp)
-        {
-            try
-            {
-                WebClient client = new WebClient();
-                Stream stream = client.OpenRead(imageUrl);
-                bmp = new Bitmap(stream);
-                stream.Close();
-                stream.Dispose();
-                return true;
-            }
-            catch
-            {
-                bmp = null;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Saves a duplicate of the local image to plugin data folder to prevent
-        /// Playnite from deleting the original when the user removes the game that
-        /// has the image as metadata
-        /// </summary>
-        /// <param name="uuid">UUID of the instance</param>
-        /// <param name="dataPath">Plugin data path</param>
-        /// <param name="imgPath">Path to original image</param>
-        /// <returns>Path to the new saved image</returns>
-        private static string SaveDuplicateImg(string uuid, string dataPath, string imgPath, bool resize, bool cover)
-        {
-            string savePath = dataPath;
-            BitmapImage bitmapImage = new BitmapImage();
-            using (var fs = new FileStream(imgPath, FileMode.Open, FileAccess.Read))
-            {
-                fs.Seek(0, SeekOrigin.Begin);
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = fs;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
-            }
-           
-            if (cover)
-            {
-                savePath = resize ? Path.Combine(savePath, $"{uuid}_portrait_cover.png") : Path.Combine(savePath, $"{uuid}_cover.png");
-            }
-            else
-            {
-                savePath = Path.Combine(savePath, $"{uuid}_bg.png");
-            }
-            if (!File.Exists(savePath))
-            {
-                using (var ms = new MemoryStream())
-                {
-                    ms.Seek(0, SeekOrigin.Begin);
-                    PngBitmapEncoder encoder = new PngBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
-                    encoder.Save(ms);
-                    Image i = Image.FromStream(ms);
-                    i.Save(savePath);
-                }
-            }
-            return savePath;
-        }
-
-        /// <summary>
         /// Gets the images (icon, cover, background) for an instance
         /// </summary>
         /// <param name="instance">The <c>Instance</c> to get images for</param>
@@ -506,11 +436,11 @@
                 Directory.CreateDirectory(imgCache);
             }
             var icon = new MetadataFile(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, "icon.png"));
-            MetadataFile cover = new MetadataFile();
-            MetadataFile background = new MetadataFile();
-            Bitmap bmp;
+            byte[] imgBytes;
             string defaultCover = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimage.png");
             string defaultCoverPortrait = Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\defaultimagerect.png");
+            MetadataFile cover = (resize) ? new MetadataFile($"{instance.Uuid}_cover.png", ImageHelpers.GetImageBytes(defaultCoverPortrait)) : new MetadataFile($"{instance.Uuid}_cover", ImageHelpers.GetImageBytes(defaultCover));
+            MetadataFile background = new MetadataFile($"{instance.Uuid}_background.png", ImageHelpers.GetImageBytes(defaultCover));
             switch (instance.PackSource())
             {
                 case SourceEnum.CurseForge:
@@ -520,25 +450,15 @@
                     }
                     if (instance.Launcher.CurseForgeProject.Logo.Url != null && instance.Launcher.CurseForgeProject.Logo.Url != string.Empty)
                     {
-                        if (resize && TrySaveImage(instance.Launcher.CurseForgeProject.Logo.Url, out bmp))
+                        if (resize && ImageHelpers.TryResizeImage(new Uri(instance.Launcher.CurseForgeProject.Logo.Url), out imgBytes))
                         {
-                            if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
-                            {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
-                            }
-                            cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
-                            bmp.Dispose();
+                            cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
                         else
                         {
                             cover = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
                         }
                         background = new MetadataFile(instance.Launcher.CurseForgeProject.Logo.Url);
-                    }
-                    else
-                    {
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Modrinth:
@@ -548,54 +468,15 @@
                     }
                     if (File.Exists(Path.Combine(instanceDir, "instance.png")))
                     {
-                        if (resize)
+                        if (resize && ImageHelpers.TryResizeImage(Path.Combine(instanceDir, "instance.png"), out imgBytes))
                         {
-                            try
-                            {
-                                if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
-                                {
-                                    logger.Debug($"Portait cover for {instance.Launcher.Name ?? instance.Uuid} not found, creating");
-                                    BitmapImage bitmapImage = new BitmapImage();
-                                    using (var fs = new FileStream(Path.Combine(instanceDir, "instance.png"), FileMode.Open, FileAccess.Read))
-                                    {
-                                        fs.Seek(0, SeekOrigin.Begin);
-                                        bitmapImage.BeginInit();
-                                        bitmapImage.StreamSource = fs;
-                                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
-                                        bitmapImage.EndInit();
-                                        bitmapImage.Freeze();
-                                    }
-                                    using (var ms = new MemoryStream())
-                                    {
-                                        PngBitmapEncoder encoder = new PngBitmapEncoder();
-                                        encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
-                                        encoder.Save(ms);
-                                        bmp = new Bitmap(ms);
-                                        bmp.MakeTransparent();
-                                    }
-                                    ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
-                                    bmp.Dispose();
-                                }
-                                cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
-                            }
-                            catch (Exception e)
-                            {
-                                logger.Error($"Failed to resize cover art for instance {instance.Launcher.Name}\n    Error: {e.Message}\n   Trace: {e.StackTrace}");
-                                cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(instanceDir, "instance.png"), false, true));
-                                //cover = new MetadataFile(Path.Combine(instanceDir, "instance.png"));
-                            }
+                            cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
                         else
                         {
-                            cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(instanceDir, "instance.png"), false, true));
+                            cover = new MetadataFile($"{instance.Uuid}_cover.png",  ImageHelpers.GetImageBytes(Path.Combine(instanceDir, "instance.png")));
                         }
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(instanceDir, "instance.png"), false, false));
-                    }
-                    else
-                    {
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
+                        background = new MetadataFile($"{instance.Uuid}_background.png", ImageHelpers.GetImageBytes(Path.Combine(instanceDir, "instance.png")));
                     }
                     break;
                 case SourceEnum.Technic:
@@ -605,25 +486,15 @@
                     }
                     if (instance.Launcher.TechnicModpack.Logo.Url != null && instance.Launcher.TechnicModpack.Logo.Url != string.Empty)
                     {
-                        if (resize && TrySaveImage(instance.Launcher.TechnicModpack.Logo.Url, out bmp))
+                        if (resize && ImageHelpers.TryResizeImage(new Uri(instance.Launcher.TechnicModpack.Logo.Url), out imgBytes))
                         {
-                            if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
-                            {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
-                            }
-                            cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
-                            bmp.Dispose();
+                            cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
                         else
                         {
                             cover = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
                         }
                         background = new MetadataFile(instance.Launcher.TechnicModpack.Logo.Url);
-                    }
-                    else
-                    {
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.ATLauncher:
@@ -634,14 +505,9 @@
                         packSlug = Regex.Replace(packSlug, @"\s+", "");
                         WebClient webClient = new WebClient();
                         var res = webClient.DownloadString($"https://cdn.atlcdn.net/images/packs/{packSlug}.png");
-                        if (resize && TrySaveImage($"https://cdn.atlcdn.net/images/packs/{packSlug}.png", out bmp))
+                        if (resize && ImageHelpers.TryResizeImage(new Uri($"https://cdn.atlcdn.net/images/packs/{packSlug}.png"), out imgBytes))
                         {
-                            if (!File.Exists(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png")))
-                            {
-                                ResizeBitmapWithPadding(bmp, 810, 1080).Save(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"), ImageFormat.Png);
-                            }
-                            cover = new MetadataFile(Path.Combine(imgCache, $"{instance.Uuid}_portrait_cover.png"));
-                            bmp.Dispose();
+                            cover = new MetadataFile($"{instance.Uuid}_cover.png", imgBytes);
                         }
                         else
                         {
@@ -652,40 +518,15 @@
                     catch (Exception e)
                     {
                         logger.Warn($"Failed to fetch cover for pack {instanceDir}, leaving as default");
-                        cover = (resize) ? new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCoverPortrait, resize, true)) : new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, resize, true));
-                        background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, defaultCover, false, false));
                     }
                     break;
                 case SourceEnum.Vanilla:
                     icon = new MetadataFile("https://minecraft.wiki/images/Grass_Block_JE7_BE6.png");
-                    cover = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png"), false, true));
-                    background = new MetadataFile(SaveDuplicateImg(instance.Uuid, imgCache, Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png"), false, false));
+                    cover = new MetadataFile($"{instance.Uuid}_cover.png", ImageHelpers.GetImageBytes(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillacover.png")));
+                    background = new MetadataFile($"{instance.Uuid}_background.png", ImageHelpers.GetImageBytes(Path.Combine(ATLauncherInstanceImporter.AssemblyPath, @"Resources\vanillabackground.png")));
                     break;
             }
             return Tuple.Create(icon, cover, background);
-        }
-
-        /// <summary>
-        /// Reshapes and resizes a bitmap with given parameters by resizing it and padding it with black bars
-        /// </summary>
-        /// <param name="b">Bitmap to reshape</param>
-        /// <param name="nWidth">Target width</param>
-        /// <param name="nHeight">Target height</param>
-        /// <returns>Reshaped and resized bitmap</returns>
-        private static Bitmap ResizeBitmapWithPadding(Bitmap b, int nWidth, int nHeight)
-        {
-            int newHeight = (int)(((double)nWidth / (double)b.Width) * (double)b.Height);
-            Bitmap result = new Bitmap(nWidth, nHeight);
-            using (Graphics g = Graphics.FromImage((System.Drawing.Image)result))
-            {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.CompositingQuality = CompositingQuality.HighQuality;
-                g.Clear(System.Drawing.Color.FromArgb(0,0,0,0));
-                g.DrawImage(b, 0, ((nHeight / 2) - (newHeight / 2)), nWidth, newHeight);
-            }
-            return result;
         }
 
         /// <summary>
