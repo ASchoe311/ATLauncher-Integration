@@ -48,11 +48,41 @@ namespace ATLauncherInstanceImporter.Tests
             string dir = Path.Combine(@".\TestData", testDir);
             string imgCache = Path.Combine(dir, "ImageCache");
             string uuid = GetInstanceUuid(dir);
+            
+            //Test create in cache
             DeleteImages(dir);
-            _ = ATLauncherInstanceImporter.ResizeCover(dir, false, dir);
+            string newCachedImage = ATLauncherInstanceImporter.ResizeCover(dir, false, dir);
             Assert.True(File.Exists(Path.Combine(imgCache, $"{uuid}_cover.png")));
             Assert.True(File.Exists(Path.Combine(imgCache, $"{uuid}_bg.png")));
+
+            //Test retrieve from cache
+            string retrievedImage = ATLauncherInstanceImporter.ResizeCover(dir, false, dir);
+            Assert.Equal(newCachedImage, retrievedImage);
         }
+
+        
+
+        [Theory]
+        [InlineData("cottagewitch")]
+        [InlineData("atm9")]
+        [InlineData("cobblemon")]
+        [InlineData("mechmagic")]
+        public void TestCacheImagePortrait(string testDir)
+        {
+            string dir = Path.Combine(@".\TestData", testDir);
+            string imgCache = Path.Combine(dir, "ImageCache");
+            string uuid = GetInstanceUuid(dir);
+
+            //Test create in cache
+            DeleteImages(dir);
+            string newCachedImage = ATLauncherInstanceImporter.ResizeCover(dir, true, dir);
+            Assert.True(File.Exists(Path.Combine(imgCache, $"{uuid}_portrait_cover.png")));
+
+            //Test retrieve from cache
+            string retrievedImage = ATLauncherInstanceImporter.ResizeCover(dir, true, dir);
+            Assert.Equal(newCachedImage, retrievedImage);
+        }
+
 
 
     }
