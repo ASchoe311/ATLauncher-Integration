@@ -40,12 +40,12 @@
     <sys:String x:Key="LOCATLauncherResizeCovers">Cover-Art in Hochformat umwandeln</sys:String>
     <sys:String x:Key="LOCATLauncherResizeCoversTooltip">Verändert das Cover-Art so, dass es besser aussieht, wenn Playnite im Vollbildmodus verwendet wird</sys:String>
     <sys:String x:Key="LOCATLauncherChangingCovers">Aktualisierung des Titelbildes</sys:String>
-    <sys:String x:Key="LOCATLauncherChangingNames">Changing Instance Names</sys:String>
-    <sys:String x:Key="LOCATLauncherNameFormatHeader">Format for instance names</sys:String>
-    <sys:String x:Key="LOCATLauncherAcceptableTokens">Acceptable tokens:</sys:String>
-    <sys:String x:Key="LOCATLauncherTokenInstName">{instanceName} - The name you gave to the instance</sys:String>
-    <sys:String x:Key="LOCATLauncherTokenPackName">{packName} - The official name of the instance</sys:String>
-    <sys:String x:Key="LOCATLauncherTokenPackVersion">{packVersion} - The version of the pack/instance</sys:String>
-    <sys:String x:Key="LOCATLauncherTokenMcVersion">{mcVersion} - The Minecraft version of the instance</sys:String>
-    <sys:String x:Key="LOCATLauncherTokenModLoader">{modLoader} - The mod loader used by the instance</sys:String>
+    <sys:String x:Key="LOCATLauncherChangingNames">Instanznamen ändern</sys:String>
+    <sys:String x:Key="LOCATLauncherNameFormatHeader">Format für Instanznamen</sys:String>
+    <sys:String x:Key="LOCATLauncherAcceptableTokens">Akzeptierte Möglichkeiten:</sys:String>
+    <sys:String x:Key="LOCATLauncherTokenInstName">{instanceName} - Der Name, den Sie der Instanz gegeben haben</sys:String>
+    <sys:String x:Key="LOCATLauncherTokenPackName">{packName} - Der offizielle Name der Instanz</sys:String>
+    <sys:String x:Key="LOCATLauncherTokenPackVersion">{packVersion} - Die Version des Pakets/der Instanz</sys:String>
+    <sys:String x:Key="LOCATLauncherTokenMcVersion">{mcVersion} - Die Minecraft-Version der Instanz</sys:String>
+    <sys:String x:Key="LOCATLauncherTokenModLoader">{modLoader} - Der Mod-Starter, der von der Instanz verwendet wird</sys:String>
 </ResourceDictionary>
